@@ -1,0 +1,16 @@
+import { ApolloClient, InMemoryCache } from "@apollo/client/core"
+
+export default defineNuxtPlugin(() => {
+  const config = useRuntimeConfig()
+
+  const client = new ApolloClient({
+    uri: config.public.hasuraUrl,
+    cache: new InMemoryCache()
+  })
+
+  return {
+    provide: {
+      gql: client
+    }
+  }
+})
