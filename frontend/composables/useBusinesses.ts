@@ -3,25 +3,25 @@ import {
   GET_FEATURED_BUSINESSES
 } from "~/graphql/queries"
 
+import { ref } from "vue"
 
-export const fetchBusinesses = async(
+
+// Fetch businesses from Hasura
+export const fetchBusinesses = async (
   featured = false
-)=>{
+) => {
 
-  const { $apollo } =
-  useNuxtApp() as any
-
+  const { $apollo } = useNuxtApp() as any
 
   try {
 
-    const result =
-    await $apollo.query({
+    const result = await $apollo.query({
 
       query: featured
         ? GET_FEATURED_BUSINESSES
         : GET_ALL_BUSINESSES,
 
-      fetchPolicy:"network-only"
+      fetchPolicy: "network-only"
 
     })
 
@@ -29,7 +29,7 @@ export const fetchBusinesses = async(
     return result.data.businesses || []
 
 
-  } catch(error){
+  } catch (error) {
 
     console.error(
       "Hasura error:",
@@ -37,6 +37,60 @@ export const fetchBusinesses = async(
     )
 
     return []
+
+  }
+
+}
+
+
+// Reusable businesses composable
+export const useBusinesses = () => {
+
+  const businesses = ref<any[]>([])
+
+  const loading = ref(false)
+
+  const error = ref<string | null>(null)
+
+
+  const loadBusinesses = async (
+    featured = false
+  ) => {
+
+    loading.value = true
+    error.value = null
+
+
+    try {
+
+      businesses.value = await fetchBusinesses(
+        featured
+      )
+
+
+    } catch (err: any) {
+
+      error.value = err.message || "Failed to load businesses"
+
+
+    } finally {
+
+      loading.value = false
+
+    }
+
+  }
+
+
+  return {
+
+    businesses,
+
+    loading,
+
+    error,
+
+    loadBusinesses
 
   }
 

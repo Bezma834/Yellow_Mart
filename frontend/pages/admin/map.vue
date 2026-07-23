@@ -1,46 +1,68 @@
-<template>
-  <div id="map"></div>
-</template>
 
 <script setup lang="ts">
 import { Loader } from "@googlemaps/js-api-loader"
-import { collection, getDocs } from "firebase/firestore"
-import { db } from "~/plugins/firebase.client"
+import { fetchBusinesses } from "~/composables/useBusinesses"
+
+const businesses = ref<any[]>([])
 
 onMounted(async () => {
-  if (!db) return
 
-  const snap = await getDocs(collection(db, "businesses"))
+  businesses.value = await fetchBusinesses()
+
 
   const loader = new Loader({
-    apiKey: "YOUR_KEY"
+    apiKey: "YOUR_GOOGLE_MAPS_KEY"
   })
+
 
   const google = await loader.load()
 
+
   const map = new google.maps.Map(
-    document.getElementById("map"),
+    document.getElementById("map") as HTMLElement,
     {
-      center: { lat: 9.03, lng: 38.74 },
+      center: {
+        lat: 9.03,
+        lng: 38.74
+      },
       zoom: 11
     }
   )
 
-  snap.docs.forEach(doc => {
-    const b = doc.data()
+
+  businesses.value.forEach((business)=>{
+
+    if(
+      !business.latitude ||
+      !business.longitude
+    ) return
+
 
     new google.maps.Marker({
-      position: {
-        lat: b.location.lat,
-        lng: b.location.lng
+
+      position:{
+        lat: business.latitude,
+        lng: business.longitude
       },
+
       map,
-      title: b.name
+
+      title: business.name
+
     })
+
   })
+
 })
 </script>
 
+
+<template>
+  <div
+    id="map"
+    class="w-full h-[500px]"
+  ></div>
+</template>
 <style scoped>
 #map {
   height: 100vh;
