@@ -12,12 +12,14 @@ dotenv.config();
 const app = express();
 
 app.use(
-cors({
-  origin:"http://localhost:3000",
-  credentials:true
-})
-)
-
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://yellow-mart-coral.vercel.app"
+    ],
+    credentials: true
+  })
+);
 
 // Read JSON requests
 app.use(express.json());
@@ -50,8 +52,7 @@ app.get("/", (req, res) => {
 });
 
 
-
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 
 app.listen(PORT, () => {
