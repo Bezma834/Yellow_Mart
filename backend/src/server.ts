@@ -11,15 +11,12 @@ dotenv.config();
 
 const app = express();
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://yellow-mart-coral.vercel.app"
-    ],
-    credentials: true
-  })
-);
+app.use(cors({
+  origin: [
+    "https://yellow-mart-8hi9622el-yellow-mart.vercel.app"
+  ],
+  credentials: true
+}));
 
 // Read JSON requests
 app.use(express.json());

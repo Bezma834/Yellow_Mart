@@ -25,7 +25,8 @@ app.get("/api/products/:id", (req, res) => {
   const product = products.find(p => p.id === Number(req.params.id))
   res.json(product)
 })
+const PORT = process.env.PORT || 5000
 
-app.listen(5000, () => {
-  console.log("Backend running on http://localhost:5000")
+app.listen(PORT, () => {
+  console.log(`Backend running on port ${PORT}`)
 })
