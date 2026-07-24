@@ -11,11 +11,8 @@ export default defineNuxtConfig({
   ],
 
   googleFonts: {
-
     families: {
-
       Inter: true,
-
       Poppins: [
         400,
         500,
@@ -23,9 +20,7 @@ export default defineNuxtConfig({
         700,
         800
       ]
-
     }
-
   },
 
   devtools: {
@@ -36,18 +31,11 @@ export default defineNuxtConfig({
 
   layouts: true,
 
-runtimeConfig: {
-
-public:{
-
-hasuraUrl:
-"https://inviting-moray-87.hasura.app/v1/graphql",
-
-googleClientId:
-process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID
-
-}
-
+  runtimeConfig: {
+  public: {
+    hasuraUrl:
+      "https://inviting-moray-87.hasura.app/v1/graphql"
+  }
 }
 
 })

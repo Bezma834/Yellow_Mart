@@ -103,200 +103,117 @@
   </div>
 </template>
 
-
-
 <script setup lang="ts">
 
 import { ref } from "vue"
+import { useRouter } from "vue-router"
 
-
+const router = useRouter()
 
 const identifier = ref("")
-
 const password = ref("")
-
 const error = ref("")
-
 const loading = ref(false)
-
 const showPassword = ref(false)
-
-
 
 
 const validate = () => {
 
-
   if (!identifier.value) {
-
-    error.value = "Please enter your username or email"
-
+    error.value = "Please enter your email"
     return false
-
   }
-
 
   if (!password.value) {
-
     error.value = "Please enter your password"
-
     return false
-
   }
-
 
   if (password.value.length < 6) {
-
     error.value = "Password must contain at least 6 characters"
-
     return false
-
   }
 
-
   return true
-
 }
-
-
-
-
 
 
 const login = async () => {
 
-
   error.value = ""
-
-
 
   if (!validate()) return
 
-
-
   loading.value = true
-
-
 
   try {
 
-const res = await fetch(
+    const res = await fetch(
+      "https://yellow-mart-backend.onrender.com/api/auth/login",
+      {
+        method: "POST",
 
-  "https://yellow-mart-backend.onrender.com/api/auth/login",
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-  {
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json"
-    },
-
-    body: JSON.stringify({
-      email: identifier.value,
-      password: password.value
-    })
-  }
-)
+        body: JSON.stringify({
+          email: identifier.value,
+          password: password.value
+        })
+      }
+    )
 
 
     const data = await res.json()
 
 
-
     if (!res.ok) {
 
-
       error.value =
-
-        data.message || "Invalid login details"
-
+        data.message || "Invalid email or password"
 
       return
-
     }
 
 
-
-
     localStorage.setItem(
-
       "token",
-
       data.token
-
     )
-
-
 
 
     localStorage.setItem(
-
       "user",
-
       JSON.stringify(data.user)
-
     )
 
 
+    if (data.user?.role?.trim() === "admin") {
 
-
-
-    // ADMIN REDIRECT
-
-    if (
-
-      data.user.role?.trim() === "admin"
-
-    ) {
-
-
-      window.location.href = "/admin"
-
+      router.push("/admin")
 
     } else {
 
-
-      window.location.href = "/"
-
+      router.push("/")
 
     }
 
 
+  } catch (err) {
 
-
-  }
-
-  catch (err) {
-
-
-    console.error(
-
-      "LOGIN ERROR:",
-
-      err
-
-    )
-
+    console.error("LOGIN ERROR:", err)
 
     error.value =
+      "Cannot connect to server. Please try again."
 
-      "Cannot connect to server"
-
-
-  }
-
-
-  finally {
-
+  } finally {
 
     loading.value = false
 
-
   }
 
-
 }
-
 
 </script>
 
