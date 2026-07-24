@@ -9,8 +9,10 @@
   muted
   loop
   playsinline
+  preload="auto"
+  @ended="restartVideo"
 >
-  <source src="/videos/hero.mp4" type="video/mp4">
+  <source src="/videos/hero-loop.mp4" type="video/mp4">
 </video>
 
     <!-- Dark Overlay -->
@@ -78,6 +80,23 @@ const handleSearch = () => {
 }
 
 
+
+onMounted(() => {
+  if (heroVideo.value) {
+
+    heroVideo.value.play()
+
+    heroVideo.value.addEventListener("ended", () => {
+
+      if (heroVideo.value) {
+        heroVideo.value.currentTime = 0
+        heroVideo.value.play()
+      }
+
+    })
+
+  }
+})
 onMounted(async () => {
 
   if(heroVideo.value){
