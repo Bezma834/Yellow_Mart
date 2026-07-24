@@ -1,5 +1,5 @@
 export const useApi = () => {
-  const baseURL = "http://localhost:5000/api"
+ const baseURL = "https://yellow-mart-backend.onrender.com/api"
 
   // GET request
   const get = async (url: string) => {

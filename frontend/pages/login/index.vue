@@ -180,35 +180,23 @@ const login = async () => {
 
   try {
 
+const res = await fetch(
 
-    const res = await fetch(
+  "https://yellow-mart-backend.onrender.com/api/auth/login",
 
-      "http://localhost:5000/api/auth/login",
+  {
+    method: "POST",
 
-      {
+    headers: {
+      "Content-Type": "application/json"
+    },
 
-        method: "POST",
-
-        headers: {
-
-          "Content-Type": "application/json"
-
-        },
-
-
-        body: JSON.stringify({
-
-          email: identifier.value,
-
-          password: password.value
-
-        })
-
-
-      }
-
-    )
-
+    body: JSON.stringify({
+      email: identifier.value,
+      password: password.value
+    })
+  }
+)
 
 
     const data = await res.json()

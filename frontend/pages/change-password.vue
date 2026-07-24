@@ -56,14 +56,12 @@ loading.value=true
 try{
 
 const result = await $fetch(
-  "http://localhost:5000/api/change-password",
+  "https://yellow-mart-backend.onrender.com/api/change-password",
   {
     method:"POST",
-
     headers:{
       "Content-Type":"application/json"
     },
-
     body:{
       userId:user.value.id,
       oldPassword:oldPassword.value,
@@ -71,7 +69,6 @@ const result = await $fetch(
     }
   }
 )
-
 message.value =
 result.message
 

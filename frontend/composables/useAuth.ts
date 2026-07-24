@@ -113,41 +113,19 @@ export const useAuth = () => {
     try {
 
 
-
-      const res = await $fetch<{
-
-        token: string
-
-        user: User
-
-
-      }>(
-
-
-        "http://localhost:5000/api/auth/login",
-
-
-        {
-
-
-          method: "POST",
-
-
-          body: {
-
-
-            email: identifier,
-
-            password
-
-
-          }
-
-
-        }
-
-
-      )
+const res = await $fetch<{
+  token: string
+  user: User
+}>(
+  "https://yellow-mart-backend.onrender.com/api/auth/login",
+  {
+    method: "POST",
+    body: {
+      email: identifier,
+      password
+    }
+  }
+)
 
 
 

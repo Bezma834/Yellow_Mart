@@ -269,7 +269,7 @@ const signup = async () => {
   try {
 
     const res = await fetch(
-      "http://localhost:5000/api/auth/signup",
+      "https://yellow-mart-backend.onrender.com/api/auth/signup",
       {
 
         method: "POST",
@@ -354,7 +354,7 @@ const googleLogin = async (response:any)=>{
 
 
     const res = await fetch(
-      "http://localhost:5000/api/auth/google",
+      "https://yellow-mart-backend.onrender.com/api/auth/google",
       {
 
         method:"POST",
