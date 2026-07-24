@@ -19,19 +19,26 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: function(origin, callback){
 
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS not allowed"));
+      if(!origin){
+        return callback(null,true);
       }
 
+
+      if(allowedOrigins.includes(origin)){
+        return callback(null,true);
+      }
+
+
+      console.log("Blocked CORS:", origin);
+
+      callback(new Error("Not allowed by CORS"));
     },
 
-    credentials: true,
+    credentials:true,
 
-    methods: [
+    methods:[
       "GET",
       "POST",
       "PUT",
@@ -39,7 +46,7 @@ app.use(
       "OPTIONS"
     ],
 
-    allowedHeaders: [
+    allowedHeaders:[
       "Content-Type",
       "Authorization"
     ]
@@ -47,44 +54,4 @@ app.use(
 );
 
 
-// Handle browser preflight requests
-app.options("*", cors());
-
-
 app.use(express.json());
-
-
-// Authentication routes
-app.use(
-  "/api/auth",
-  authRoutes
-);
-
-
-// User routes
-app.use(
-  "/api",
-  userRoutes
-);
-
-
-// Test backend
-app.get("/", (req, res) => {
-
-  res.send(
-    "Yellow-Mart Backend Running 🚀"
-  );
-
-});
-
-
-const PORT = process.env.PORT || 5000;
-
-
-app.listen(PORT, () => {
-
-  console.log(
-    `Server running on port ${PORT}`
-  );
-
-});
