@@ -12,7 +12,7 @@
   preload="auto"
   @ended="restartVideo"
 >
-  <source src="/videos/hero-loop-web.mp4" type="video/mp4">
+  <source src="/videos/hero-loop-small.mp4" type="video/mp4">
 </video>
 
     <!-- Dark Overlay -->
