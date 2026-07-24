@@ -10,31 +10,65 @@ dotenv.config();
 const app = express();
 
 
-app.use(cors({
-  origin: [
-    "https://yellow-mart-git-main-yellow-mart.vercel.app",
-    "https://yellow-mart-8hi9622el-yellow-mart.vercel.app",
-    "http://localhost:3000"
-  ],
-  credentials: true
-}));
+const allowedOrigins = [
+  "https://yellow-mart-git-main-yellow-mart.vercel.app",
+  "https://yellow-mart-8hi9622el-yellow-mart.vercel.app",
+  "http://localhost:3000"
+];
+
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+
+    },
+
+    credentials: true,
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "DELETE",
+      "OPTIONS"
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization"
+    ]
+  })
+);
+
+
+// Handle browser preflight requests
+app.options("*", cors());
 
 
 app.use(express.json());
 
 
+// Authentication routes
 app.use(
   "/api/auth",
   authRoutes
 );
 
 
+// User routes
 app.use(
   "/api",
   userRoutes
 );
 
 
+// Test backend
 app.get("/", (req, res) => {
 
   res.send(
