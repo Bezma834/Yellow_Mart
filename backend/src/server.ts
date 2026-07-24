@@ -9,8 +9,8 @@ dotenv.config();
 
 const app = express();
 
-
 const allowedOrigins = [
+  "https://yellow-mart-n4516ewjx-yellow-mart.vercel.app",
   "https://yellow-mart-git-main-yellow-mart.vercel.app",
   "https://yellow-mart-8hi9622el-yellow-mart.vercel.app",
   "http://localhost:3000"
@@ -19,29 +19,22 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
 
-      // Allow Postman/mobile/no origin requests
       if (!origin) {
         return callback(null, true);
       }
-
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
+      console.log("Blocked origin:", origin);
 
-      console.log("Blocked CORS:", origin);
-
-      return callback(
-        new Error("Not allowed by CORS")
-      );
+      return callback(null, false);
     },
 
-
     credentials: true,
-
 
     methods: [
       "GET",
@@ -51,15 +44,12 @@ app.use(
       "OPTIONS"
     ],
 
-
     allowedHeaders: [
       "Content-Type",
       "Authorization"
     ]
-
   })
 );
-
 
 
 app.use(express.json());
