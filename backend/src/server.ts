@@ -8,14 +8,13 @@ import userRoutes from "./routes/user";
 dotenv.config();
 
 const app = express();
-
 const allowedOrigins = [
+  "https://yellow-mart-coral.vercel.app",
   "https://yellow-mart-n4516ewjx-yellow-mart.vercel.app",
   "https://yellow-mart-git-main-yellow-mart.vercel.app",
   "https://yellow-mart-8hi9622el-yellow-mart.vercel.app",
-  "http://localhost:3000"
+  "http://localhost:3000",
 ];
-
 
 app.use(
   cors({
