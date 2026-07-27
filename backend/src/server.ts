@@ -8,14 +8,19 @@ import userRoutes from "./routes/user";
 dotenv.config();
 
 const app = express();
-const allowedOrigins = [
-  "https://yellow-mart-coral.vercel.app",
-  "https://yellow-mart-n4516ewjx-yellow-mart.vercel.app",
-  "https://yellow-mart-git-main-yellow-mart.vercel.app",
-  "https://yellow-mart-8hi9622el-yellow-mart.vercel.app",
-  "http://localhost:3000",
-];
+origin(origin, callback) {
+  if (!origin) return callback(null, true);
 
+  if (
+    origin === "http://localhost:3000" ||
+    origin.endsWith(".vercel.app")
+  ) {
+    return callback(null, true);
+  }
+
+  console.log("Blocked origin:", origin);
+  callback(new Error("Not allowed by CORS"));
+}
 app.use(
   cors({
     origin: (origin, callback) => {
