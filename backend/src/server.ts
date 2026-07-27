@@ -8,37 +8,51 @@ import userRoutes from "./routes/user";
 dotenv.config();
 
 const app = express();
-origin(origin, callback) {
-  if (!origin) return callback(null, true);
 
-  if (
-    origin === "http://localhost:3000" ||
-    origin.endsWith(".vercel.app")
-  ) {
-    return callback(null, true);
-  }
 
-  console.log("Blocked origin:", origin);
-  callback(new Error("Not allowed by CORS"));
-}
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://yellow-mart-coral.vercel.app"
+];
+
+
 app.use(
   cors({
+
     origin: (origin, callback) => {
 
+      console.log("Incoming Origin:", origin);
+
+
+      // Allow requests without origin (Postman, mobile apps, etc.)
       if (!origin) {
         return callback(null, true);
       }
 
+
+      // Allow listed origins
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      console.log("Blocked origin:", origin);
 
-      return callback(null, false);
+      // Allow any Vercel deployment preview URL
+      if (origin.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+
+      console.log("Blocked Origin:", origin);
+
+      return callback(
+        new Error("Not allowed by CORS")
+      );
+
     },
 
+
     credentials: true,
+
 
     methods: [
       "GET",
@@ -48,27 +62,28 @@ app.use(
       "OPTIONS"
     ],
 
+
     allowedHeaders: [
       "Content-Type",
       "Authorization"
     ]
+
   })
 );
 
 
+// JSON parser
 app.use(express.json());
 
 
 
-// Authentication routes
+// Routes
 app.use(
   "/api/auth",
   authRoutes
 );
 
 
-
-// User routes
 app.use(
   "/api",
   userRoutes
@@ -76,7 +91,7 @@ app.use(
 
 
 
-// Test backend
+// Test route
 app.get("/", (req, res) => {
 
   res.send(
@@ -88,7 +103,6 @@ app.get("/", (req, res) => {
 
 
 // Start server
-
 const PORT = process.env.PORT || 5000;
 
 
