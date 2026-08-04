@@ -1,183 +1,162 @@
 <template>
   <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <NuxtLink to="/" class="logo">
+            <span class="logo-icon">Y</span>
+            <span class="logo-text">Yellow Mart</span>
+          </NuxtLink>
+          <p class="desc">
+            Ethiopia's premier business directory, connecting customers with local businesses across the nation.
+          </p>
+        </div>
 
-    <div class="footer-container">
+        <div class="footer-box">
+          <h3>Categories</h3>
+          <ul>
+            <li>Restaurants</li>
+            <li>Hotels</li>
+            <li>Healthcare</li>
+            <li>Automotive</li>
+            <li>Education</li>
+            <li>Finance</li>
+          </ul>
+        </div>
 
-      <!-- COMPANY -->
-      <div class="footer-box">
-        <h2 class="logo">🟡 Yellow Mart</h2>
+        <div class="footer-box">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><NuxtLink to="/">Home</NuxtLink></li>
+            <li><NuxtLink to="/about">About Us</NuxtLink></li>
+            <li><NuxtLink to="/advertise">Advertise</NuxtLink></li>
+            <li><NuxtLink to="/careers">Careers</NuxtLink></li>
+            <li><NuxtLink to="/press">Press</NuxtLink></li>
+          </ul>
+        </div>
 
-        <p class="desc">
-          Yellow Mart is Ethiopia's premier business directory,
-          connecting customers with local businesses across the nation.
-          Discover the best services near you.
-        </p>
-         <!-- SOCIAL ICONS UNDER DESCRIPTION -->
-  <div class="socials">
-    <a href="#"><i class="mdi mdi-facebook"></i></a>
-    <a href="#"><i class="mdi mdi-instagram"></i></a>
-    <a href="#"><i class="mdi mdi-twitter"></i></a>
-    <a href="#"><i class="mdi mdi-telegram"></i></a>
-  </div>
+        <div class="footer-box">
+          <h3>Contact Us</h3>
+          <ul class="contact">
+            <li>Bole Road, Addis Ababa, Ethiopia</li>
+            <li><a href="tel:+251911000000">+251 11 XXX XXXX</a></li>
+            <li><a href="mailto:info@yellowmart.et">info@yellowmart.et</a></li>
+          </ul>
+        </div>
       </div>
 
-      <!-- CATEGORIES -->
-      <div class="footer-box">
-        <h3>Categories</h3>
-
-        <ul class="footer-list">
-          <li>🍔 Restaurants</li>
-          <li>🏨 Hotels</li>
-          <li>🏥 Healthcare</li>
-          <li>🚗 Automotive</li>
-          <li>🎓 Education</li>
-          <li>💰 Finance</li>
-        </ul>
+      <div class="copyright">
+        <p>&copy; 2026 Yellow Mart. All rights reserved.</p>
       </div>
-
-      <!-- QUICK LINKS (MIDDLE) -->
-      <div class="footer-box">
-        <h3>Quick Links</h3>
-
-        <ul class="footer-list">
-          <li><a href="#">Home</a></li>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Advertise</a></li>
-          <li><a href="#">Careers</a></li>
-          <li><a href="#">Press</a></li>
-        </ul>
-      </div>
-
-      <!-- CONTACT -->
-      <div class="footer-box">
-        <h3>Contact Us</h3>
-
-        <ul class="footer-list contact">
-          <li><span>📍</span> Bole Road, Addis Ababa, Ethiopia</li>
-          <li><span>📞</span> +251 11 XXX XXXX</li>
-          <li><span>📧</span> info@yellowmart.et</li>
-        </ul>
-
-      </div>
-
     </div>
-
-    <div class="copyright">
-      © 2026 Yellow Mart. All rights reserved.
-    </div>
-
   </footer>
 </template>
 
-<style>
-/* FOOTER WRAPPER */
+<style scoped>
 .footer {
-  background: #0f172a;
+  background: #0b1121;
   color: white;
-  padding: 60px 20px;
+  padding: 4rem 0 0;
 }
 
-/* GRID */
-.footer-container {
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.footer-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 30px;
-  margin-bottom: 30px;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 3rem;
+  padding-bottom: 3rem;
 }
 
-/* LOGO */
-.logo {
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  transition: 0.3s;
+.footer-brand .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: white;
+  margin-bottom: 1rem;
 }
 
-.logo:hover {
-  color: #facc15;
-  transform: scale(1.05);
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-primary);
+  color: #0f172a;
+  border-radius: var(--radius-lg);
+  font-weight: 800;
+  font-size: 1rem;
 }
 
-/* DESCRIPTION */
 .desc {
-  font-size: 13px;
-  opacity: 0.8;
-  line-height: 1.6;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.7;
+  margin: 0;
+  max-width: 320px;
 }
 
-/* LIST STYLE */
-.footer-list {
+.footer-box h3 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 1.25rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.footer-box ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.footer-list li {
-  margin: 8px 0;
-  font-size: 14px;
-  opacity: 0.85;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: 0.2s;
+.footer-box li {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.45);
 }
 
-/* hover effect */
-.footer-list li:hover {
-  transform: translateX(5px);
-  color: #facc15;
-}
-
-/* CONTACT ICON ALIGN FIX */
-.contact li span {
-  width: 20px;
-  display: inline-block;
-}
-
-/* SOCIAL ICONS */
-.socials {
-  margin-top: 12px;
-  display: flex;
-  gap: 12px;
-  justify-content: flex-start; /* important: left side */
-}
-
-.socials a {
-  color: white;
-  font-size: 18px;
-  transition: 0.3s;
-}
-
-.socials a:hover {
-  color: #facc15;
-  transform: translateY(-3px);
-}
-
-/* FOOTER LINKS */
-.footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.footer-links a {
-  color: #cbd5e1;
+.footer-box a {
+  color: rgba(255, 255, 255, 0.45);
   text-decoration: none;
-  transition: 0.3s;
+  transition: color var(--transition-fast);
 }
 
-.footer-links a:hover {
-  color: #facc15;
-  transform: scale(1.1);
+.footer-box a:hover {
+  color: var(--color-primary);
 }
 
-/* COPYRIGHT */
 .copyright {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1.5rem 0;
   text-align: center;
-  margin-top: 20px;
-  font-size: 13px;
-  opacity: 0.7;
+}
+
+.copyright p {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }
 </style>

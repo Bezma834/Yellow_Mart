@@ -239,7 +239,8 @@ onMounted(() => {
   <div class="card">
 
     <h1>
-      ✏️ Edit Profile
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+      Edit Profile
     </h1>
 
     <p class="subtitle">
@@ -272,7 +273,7 @@ onMounted(() => {
           v-else
           class="avatar-placeholder"
         >
-          👤
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
 
         <input
@@ -358,7 +359,8 @@ onMounted(() => {
         v-if="success"
         class="success"
       >
-        ✅ Profile updated successfully!
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Profile updated successfully!
       </div>
 
       <!-- Buttons -->
@@ -378,7 +380,7 @@ onMounted(() => {
           class="save"
           :disabled="saving"
         >
-          {{ saving ? "Saving..." : "💾 Save Changes" }}
+          {{ saving ? "Saving..." : "Save Changes" }}
         </button>
 
       </div>
@@ -394,7 +396,7 @@ onMounted(() => {
 
 .page{
   min-height:100vh;
-  background:#f8fafc;
+  background:var(--color-bg-secondary);
   display:flex;
   justify-content:center;
   align-items:center;
@@ -404,7 +406,7 @@ onMounted(() => {
 .card{
   width:100%;
   max-width:650px;
-  background:white;
+  background:var(--color-surface);
   border-radius:30px;
   padding:40px;
   box-shadow:0 20px 40px rgba(0,0,0,.08);
@@ -413,20 +415,28 @@ onMounted(() => {
 h1{
   text-align:center;
   font-size:34px;
-  color:#0f172a;
+  color:var(--color-text-primary);
   margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+
+h1 svg{
+  color:var(--color-primary);
 }
 
 .subtitle{
   text-align:center;
-  color:#64748b;
+  color:var(--color-text-tertiary);
   margin-bottom:35px;
 }
 
 .loading{
   text-align:center;
   font-size:20px;
-  color:#64748b;
+  color:var(--color-text-tertiary);
 }
 
 .avatar-section{
@@ -441,7 +451,7 @@ h1{
   height:140px;
   border-radius:50%;
   object-fit:cover;
-  border:5px solid #f97316;
+  border:5px solid var(--color-primary);
   margin-bottom:15px;
   transition:.3s;
 }
@@ -454,12 +464,11 @@ h1{
   width:140px;
   height:140px;
   border-radius:50%;
-  background:#f97316;
+  background:var(--color-primary);
   display:flex;
   justify-content:center;
   align-items:center;
-  font-size:60px;
-  color:white;
+  color:var(--color-text-primary);
   margin-bottom:15px;
 }
 
@@ -472,25 +481,28 @@ label{
   margin-top:20px;
   margin-bottom:8px;
   font-weight:700;
-  color:#334155;
+  color:var(--color-text-secondary);
 }
 
 input,
 textarea{
   width:100%;
   padding:14px 16px;
-  border:1px solid #d1d5db;
+  border:1px solid var(--color-border);
   border-radius:14px;
   font-size:16px;
+  font-family:inherit;
   transition:.3s;
   outline:none;
   box-sizing:border-box;
+  background:var(--color-surface);
+  color:var(--color-text-primary);
 }
 
 input:focus,
 textarea:focus{
-  border-color:#f97316;
-  box-shadow:0 0 0 4px rgba(249,115,22,.15);
+  border-color:var(--color-primary);
+  box-shadow:0 0 0 4px var(--color-primary-glow);
 }
 
 textarea{
@@ -498,7 +510,7 @@ textarea{
 }
 
 .readonly{
-  background:#f1f5f9;
+  background:var(--color-bg-tertiary);
   cursor:not-allowed;
 }
 
@@ -515,27 +527,28 @@ textarea{
   padding:15px;
   font-size:16px;
   font-weight:700;
+  font-family:inherit;
   cursor:pointer;
   transition:.3s;
 }
 
 .save{
-  background:#f97316;
-  color:white;
+  background:var(--color-primary);
+  color:var(--color-text-primary);
 }
 
 .save:hover{
-  background:#ea580c;
+  background:var(--color-primary-hover);
   transform:translateY(-2px);
 }
 
 .cancel{
-  background:#e2e8f0;
-  color:#334155;
+  background:var(--color-bg-tertiary);
+  color:var(--color-text-secondary);
 }
 
 .cancel:hover{
-  background:#cbd5e1;
+  background:var(--color-border);
 }
 
 .success{
@@ -546,6 +559,10 @@ textarea{
   border-radius:12px;
   text-align:center;
   font-weight:600;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
 }
 
 .error{
@@ -580,4 +597,26 @@ textarea{
 
 }
 
+</style>
+
+<style>
+:root.dark .page { background: var(--color-dark-bg); }
+:root.dark .card { background: var(--color-dark-surface); }
+:root.dark h1 { color: var(--color-text-primary); }
+:root.dark .subtitle { color: var(--color-text-secondary); }
+:root.dark .loading { color: var(--color-text-secondary); }
+:root.dark .avatar { border-color: var(--color-primary); }
+:root.dark .avatar-placeholder { background: var(--color-primary); }
+:root.dark label { color: var(--color-text-secondary); }
+:root.dark input,
+:root.dark textarea { background: var(--color-dark-bg-secondary); border-color: var(--color-dark-border); color: var(--color-text-primary); }
+:root.dark input:focus,
+:root.dark textarea:focus { border-color: var(--color-primary); }
+:root.dark .readonly { background: var(--color-dark-bg-tertiary); }
+:root.dark .save { background: var(--color-primary); color: var(--color-text-primary); }
+:root.dark .save:hover { background: var(--color-primary-hover); }
+:root.dark .cancel { background: var(--color-dark-bg-secondary); color: var(--color-text-secondary); }
+:root.dark .cancel:hover { background: var(--color-dark-border); }
+:root.dark .success { background: var(--color-dark-surface); color: var(--color-text-primary); border: 1px solid var(--color-dark-border); }
+:root.dark .error { background: var(--color-dark-surface); color: var(--color-text-primary); border: 1px solid var(--color-dark-border); }
 </style>

@@ -18,8 +18,6 @@ definePageMeta({
 
   <CTASection />
 
-  <Footer />
-
 </div>
 
 </template>

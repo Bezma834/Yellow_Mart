@@ -267,7 +267,8 @@ class="edit-card"
 
 
 <h1>
-✏️ Edit Business
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+Edit Business
 </h1>
 
 
@@ -348,7 +349,7 @@ v-model="business.city"
 :disabled="saving"
 >
 
-{{saving ? "Saving..." : "💾 Save Changes"}}
+{{saving ? "Saving..." : "Save Changes"}}
 
 </button>
 
@@ -358,7 +359,8 @@ v-if="showSuccess"
 class="toast success"
 >
 
-✅ Business updated successfully
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+Business updated successfully
 
 </div>
 </div>
@@ -378,7 +380,7 @@ class="toast success"
 
 min-height:100vh;
 
-background:#f8fafc;
+background:var(--color-bg-secondary);
 
 padding:120px 20px;
 
@@ -392,7 +394,7 @@ max-width:650px;
 
 margin:auto;
 
-background:white;
+background:var(--color-surface);
 
 padding:35px;
 
@@ -410,6 +412,20 @@ h1{
 text-align:center;
 
 margin-bottom:30px;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+gap:10px;
+
+}
+
+h1 svg{
+
+color:var(--color-primary);
 
 }
 
@@ -480,15 +496,19 @@ border:none;
 
 border-radius:15px;
 
-background:#2563eb;
+background:var(--color-primary);
 
-color:white;
+color:var(--color-text-primary);
 
 font-size:17px;
 
 font-weight:bold;
 
+font-family:inherit;
+
 cursor:pointer;
+
+transition:.3s;
 
 }
 
@@ -520,6 +540,14 @@ animation:slide .3s ease;
 
 z-index:9999;
 
+display:flex;
+
+align-items:center;
+
+gap:10px;
+
+box-shadow:0 10px 30px rgba(0,0,0,.2);
+
 }
 
 
@@ -550,4 +578,16 @@ opacity:1;
 }
 
 }
+</style>
+
+<style>
+:root.dark .page { background: var(--color-dark-bg); }
+:root.dark .edit-card { background: var(--color-dark-surface); }
+:root.dark h1 { color: var(--color-text-primary); }
+:root.dark label { color: var(--color-text-secondary); }
+:root.dark input,
+:root.dark textarea { background: var(--color-dark-bg-secondary); border-color: var(--color-dark-border); color: var(--color-text-primary); }
+:root.dark button { background: var(--color-primary); }
+:root.dark button:hover { background: var(--color-primary-hover); }
+:root.dark .success { background: var(--color-primary); }
 </style>

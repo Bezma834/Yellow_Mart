@@ -173,7 +173,13 @@ Media Resources
 
 
 <h3>
-📰 Company Information
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+  <path d="M18 14h-8"/>
+  <path d="M15 18h-5"/>
+  <path d="M10 6h8v4h-8V6z"/>
+</svg>
+Company Information
 </h3>
 
 
@@ -188,14 +194,16 @@ our mission, and our vision.
 </div>
 
 
-
-
-
 <div class="resource-card">
 
 
 <h3>
-📸 Brand Assets
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+  <circle cx="8.5" cy="8.5" r="1.5"/>
+  <polyline points="21 15 16 10 5 21"/>
+</svg>
+Brand Assets
 </h3>
 
 
@@ -217,7 +225,14 @@ will be available soon.
 
 
 <h3>
-📄 Press Kit
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+  <polyline points="14 2 14 8 20 8"/>
+  <line x1="16" y1="13" x2="8" y2="13"/>
+  <line x1="16" y1="17" x2="8" y2="17"/>
+  <polyline points="10 9 9 9 8 9"/>
+</svg>
+Press Kit
 </h3>
 
 
@@ -265,7 +280,11 @@ Why Yellow-Mart Matters
 <div>
 
 <span>
-🌍
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <circle cx="12" cy="12" r="10"/>
+  <path d="M2 12h20"/>
+  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+</svg>
 </span>
 
 <h3>
@@ -284,7 +303,11 @@ Supporting Ethiopian businesses online.
 <div>
 
 <span>
-💻
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+  <line x1="8" y1="21" x2="16" y2="21"/>
+  <line x1="12" y1="17" x2="12" y2="21"/>
+</svg>
 </span>
 
 <h3>
@@ -303,7 +326,12 @@ Building simple digital solutions.
 <div>
 
 <span>
-🤝
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+  <circle cx="9" cy="7" r="4"/>
+  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+</svg>
 </span>
 
 <h3>
@@ -394,7 +422,7 @@ bezawittenaw0@gmail.com
 
 .press-page{
 
-background:#f8fafc;
+background:var(--color-bg-secondary);
 
 }
 
@@ -513,9 +541,9 @@ margin:25px 0;
 
 display:inline-block;
 
-background:#facc15;
+background:var(--color-primary);
 
-color:#0f172a;
+color:var(--color-text-primary);
 
 padding:15px 35px;
 
@@ -536,7 +564,7 @@ transition:.3s;
 .contact-btn:hover{
 
 
-background:#eab308;
+background:var(--color-primary-hover);
 
 transform:translateY(-5px);
 
@@ -585,7 +613,7 @@ font-size:18px;
 
 line-height:1.8;
 
-color:#64748b;
+color:var(--color-text-tertiary);
 
 
 }
@@ -644,7 +672,7 @@ font-size:40px;
 
 font-size:18px;
 
-color:#64748b;
+color:var(--color-text-tertiary);
 
 line-height:1.7;
 
@@ -695,7 +723,7 @@ margin-top:40px;
 .resource-card{
 
 
-background:white;
+background:var(--color-surface);
 
 padding:35px;
 
@@ -715,7 +743,15 @@ rgba(0,0,0,.08);
 .resource-card h3{
 
 
-color:#0f172a;
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+gap:8px;
+
+color:var(--color-text-primary);
 
 
 }
@@ -768,7 +804,7 @@ margin-top:40px;
 .highlight-grid div{
 
 
-background:#1e293b;
+background:var(--color-dark-bg-secondary);
 
 padding:35px;
 
@@ -783,7 +819,13 @@ border-radius:20px;
 .highlight-grid span{
 
 
-font-size:40px;
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+color:var(--color-primary);
 
 }
 
@@ -848,4 +890,29 @@ font-size:35px;
 
 
 
+</style>
+
+<style>
+:root.dark .press-page {
+  background: var(--color-dark-bg);
+}
+:root.dark .about-press p {
+  color: var(--color-text-secondary);
+}
+:root.dark .story-content p {
+  color: var(--color-text-secondary);
+}
+:root.dark .resource-card {
+  background: var(--color-dark-surface);
+}
+:root.dark .resource-card h3 {
+  color: var(--color-text-primary);
+}
+:root.dark .press-btn,
+:root.dark .contact-btn {
+  color: var(--color-dark-bg);
+}
+:root.dark .highlights {
+  background: var(--color-dark-bg-secondary);
+}
 </style>

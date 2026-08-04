@@ -137,7 +137,7 @@ align-items:center;
 
 padding:40px;
 
-background:#f8fafc;
+background:var(--color-bg-secondary);
 
 }
 
@@ -146,7 +146,7 @@ background:#f8fafc;
 
 max-width:850px;
 
-background:white;
+background:var(--color-surface);
 
 padding:40px;
 
@@ -164,7 +164,7 @@ font-size:32px;
 
 font-weight:900;
 
-color:#111827;
+color:var(--color-text-primary);
 
 margin-bottom:10px;
 
@@ -173,7 +173,7 @@ margin-bottom:10px;
 
 .updated{
 
-color:#64748b;
+color:var(--color-text-tertiary);
 
 margin-bottom:30px;
 
@@ -202,7 +202,7 @@ margin-bottom:8px;
 
 p{
 
-color:#475569;
+color:var(--color-text-secondary);
 
 line-height:1.7;
 
@@ -215,9 +215,9 @@ display:inline-block;
 
 margin-top:20px;
 
-background:#facc15;
+background:var(--color-primary);
 
-color:#111827;
+color:var(--color-text-primary);
 
 padding:12px 20px;
 
@@ -232,8 +232,29 @@ text-decoration:none;
 
 .back-btn:hover{
 
-background:#eab308;
+background:var(--color-primary-hover);
 
 }
 
+</style>
+
+<style>
+:root.dark .terms-page {
+  background: var(--color-dark-bg);
+}
+:root.dark .terms-card {
+  background: var(--color-dark-surface);
+}
+:root.dark .terms-card h1 {
+  color: var(--color-text-primary);
+}
+:root.dark .updated {
+  color: var(--color-text-tertiary);
+}
+:root.dark .terms-card p {
+  color: var(--color-text-secondary);
+}
+:root.dark .back-btn {
+  color: var(--color-dark-bg);
+}
 </style>

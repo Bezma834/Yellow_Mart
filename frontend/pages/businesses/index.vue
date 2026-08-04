@@ -1,174 +1,120 @@
 <template>
   <div class="page">
+    <div class="container">
+      <div class="page-hero">
+        <span class="eyebrow">Directory</span>
+        <h1>All Businesses</h1>
+        <p>Browse every business listed on Yellow Mart</p>
 
-    <h1>
-      🏪 Businesses
-    </h1>
-
-
-    <div class="search-area">
-
-      <input
-        v-model="search"
-        placeholder="Search businesses..."
-      />
-
-    </div>
-
-
-
-    <div class="grid">
-
-      <div
-        v-for="business in filteredBusinesses"
-        :key="business.id"
-        class="card"
-        @click="openBusiness(business.id)"
-      >
-
-
-        <img
-          :src="business.image || '/default-business.jpg'"
-          alt="business image"
-        />
-
-
-
-        <div class="card-body">
-
-
-          <h2>
-            {{ business.name }}
-          </h2>
-
-
-          <p>
-            📍 {{ business.city }}
-          </p>
-
-
-          <p>
-            🏷️
-            {{ business.category?.name || "Category" }}
-          </p>
-
-
-          <p class="desc">
-            {{ business.description }}
-          </p>
-
-
-          <button>
-            View Details →
+        <div class="search-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            v-model="search"
+            type="text"
+            placeholder="Search by name or city..."
+          />
+          <button v-if="search" class="clear-search" @click="search = ''">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
           </button>
-
-
         </div>
-
-
       </div>
 
+      <div class="toolbar">
+        <span class="count">{{ filteredBusinesses.length }} business{{ filteredBusinesses.length === 1 ? "" : "es" }} found</span>
+      </div>
 
+      <div v-if="filteredBusinesses.length" class="grid">
+        <BusinessCard
+          v-for="business in filteredBusinesses"
+          :key="business.id"
+          :business="business"
+        />
+      </div>
+
+      <div v-else class="empty">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+          <line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+        <h3>No businesses found</h3>
+        <p>Try a different search term or city</p>
+        <button class="btn btn-secondary" @click="search = ''">Clear Search</button>
+      </div>
     </div>
-
-
   </div>
 </template>
-
 
 
 <script setup lang="ts">
 
 import { ref, computed } from "vue"
-import { useRouter } from "vue-router"
 
+import BusinessCard from "~/components/BusinessCard.vue"
 
-import {
-  GET_ALL_BUSINESSES
-} from "~/graphql/queries"
-
-
-
-const router = useRouter()
+import { GET_ALL_BUSINESSES } from "~/graphql/queries"
 
 
 const { $apollo } = useNuxtApp() as any
-
 
 
 const businesses = ref<any[]>([])
 
 const search = ref("")
 
+const loading = ref(true)
 
 
+const loadBusinesses = async () => {
 
-// Load businesses
+  try {
 
-const loadBusinesses = async()=>{
+    const { data } = await $apollo.query({
 
+      query: GET_ALL_BUSINESSES,
 
-  const {data} = await $apollo.query({
+      fetchPolicy: "network-only"
 
-    query: GET_ALL_BUSINESSES,
+    })
 
-    fetchPolicy:"network-only"
+    businesses.value = data.businesses || []
 
-  })
+  } catch (error) {
 
+    console.error("FAILED TO LOAD BUSINESSES:", error)
 
-  businesses.value =
-    data.businesses || []
+  } finally {
 
+    loading.value = false
+
+  }
 
 }
-
-
 
 loadBusinesses()
 
 
+const filteredBusinesses = computed(() => {
 
-// Search filter
+  const query = search.value.toLowerCase().trim()
 
-const filteredBusinesses = computed(()=>{
+  if (!query) return businesses.value
 
+  return businesses.value.filter((biz) => {
 
- return businesses.value.filter((biz)=>{
-
-
-  return (
-
-    biz.name
-    .toLowerCase()
-    .includes(search.value.toLowerCase())
-
-    ||
-
-    biz.city
-    ?.toLowerCase()
-    .includes(search.value.toLowerCase())
-
-  )
-
-
- })
-
-
+    return (
+      biz.name?.toLowerCase().includes(query) ||
+      biz.city?.toLowerCase().includes(query) ||
+      biz.category?.name?.toLowerCase().includes(query)
+    )
+  })
 })
-
-
-
-
-// Open details
-
-const openBusiness = (id:string)=>{
-
- router.push(`/businesses/${id}`)
-
-}
-
-
 
 </script>
 
@@ -177,160 +123,206 @@ const openBusiness = (id:string)=>{
 
 <style scoped>
 
-
-.page{
-
-padding:100px 30px;
-
-background:#f8fafc;
-
-min-height:100vh;
-
+.page {
+  min-height: 100vh;
+  background: var(--color-bg-secondary);
+  padding: 6.5rem 1.5rem 5rem;
 }
 
-
-
-h1{
-
-text-align:center;
-
-font-size:40px;
-
-font-weight:900;
-
-margin-bottom:30px;
-
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-
-
-.search-area{
-
-display:flex;
-
-justify-content:center;
-
-margin-bottom:30px;
-
+.page-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 60% 100% at 50% -20%, var(--color-primary-light) 0%, transparent 60%),
+    var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  padding: 3rem 2rem 3.5rem;
+  border-radius: var(--radius-3xl);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
 }
 
-
-
-.search-area input{
-
-width:400px;
-
-padding:14px;
-
-border-radius:30px;
-
-border:1px solid #ddd;
-
+.page-hero h1 {
+  font-size: clamp(1.875rem, 4vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0.75rem 0 0.625rem;
 }
 
-
-
-.grid{
-
-display:grid;
-
-grid-template-columns:
-
-repeat(auto-fit,minmax(280px,1fr));
-
-gap:25px;
-
+.page-hero p {
+  color: var(--color-text-secondary);
+  font-size: 1.0625rem;
+  margin: 0 0 1.75rem;
 }
 
-
-
-.card{
-
-background:white;
-
-border-radius:20px;
-
-overflow:hidden;
-
-cursor:pointer;
-
-box-shadow:
-
-0 10px 30px rgba(0,0,0,.1);
-
-transition:.3s;
-
+.search-wrap {
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
 }
 
-
-
-.card:hover{
-
-transform:translateY(-8px);
-
+.search-wrap > svg {
+  position: absolute;
+  left: 1.125rem;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
 }
 
-
-
-.card img{
-
-width:100%;
-
-height:200px;
-
-object-fit:cover;
-
+.search-wrap input {
+  width: 100%;
+  padding: 0.875rem 2.75rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  outline: none;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
 }
 
-
-
-.card-body{
-
-padding:20px;
-
+.search-wrap input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--color-primary-glow);
 }
 
-
-
-.card-body h2{
-
-font-size:22px;
-
-font-weight:800;
-
+.search-wrap input::placeholder {
+  color: var(--color-text-tertiary);
 }
 
-
-
-.desc{
-
-color:#64748b;
-
-height:45px;
-
-overflow:hidden;
-
+.clear-search {
+  position: absolute;
+  right: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
 }
 
-
-
-button{
-
-margin-top:15px;
-
-background:#facc15;
-
-border:none;
-
-padding:10px 20px;
-
-border-radius:10px;
-
-font-weight:700;
-
-cursor:pointer;
-
+.clear-search:hover {
+  background: var(--color-border);
 }
 
+.toolbar {
+  margin-bottom: 1.5rem;
+  padding: 0 0.25rem;
+}
 
+.count {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  padding: 4.5rem 1.5rem;
+  border-radius: var(--radius-3xl);
+  text-align: center;
+}
+
+.empty svg {
+  color: var(--color-text-tertiary);
+  margin-bottom: 0.5rem;
+}
+
+.empty h3 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.empty p {
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  margin: 0 0 1rem 0;
+}
+
+@media (max-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 5.5rem 1rem 4rem;
+  }
+
+  .page-hero {
+    padding: 2.25rem 1.25rem 2.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+
+<style>
+:root.dark .page {
+  background: var(--color-dark-bg);
+}
+
+:root.dark .page-hero {
+  background:
+    radial-gradient(ellipse 60% 100% at 50% -20%, rgba(245, 158, 11, 0.15) 0%, transparent 60%),
+    var(--color-dark-surface);
+  border-color: var(--color-dark-border);
+}
+
+:root.dark .search-wrap input {
+  background: var(--color-dark-surface);
+  border-color: var(--color-dark-border);
+  color: var(--color-text-primary);
+}
+
+:root.dark .search-wrap input:focus {
+  border-color: var(--color-primary);
+}
+
+:root.dark .count {
+  color: var(--color-text-secondary);
+}
+
+:root.dark .empty {
+  background: var(--color-dark-surface);
+  border-color: var(--color-dark-border);
+}
 </style>

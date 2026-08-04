@@ -1,37 +1,33 @@
 import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client/core"
+import { setContext } from "@apollo/client/link/context"
 
 export default defineNuxtPlugin(() => {
 
+  const config = useRuntimeConfig()
+
+  const authLink = setContext((_, { headers }) => {
+    return {
+      headers: {
+        ...headers,
+        "x-hasura-admin-secret": config.public.hasuraSecret || ""
+      }
+    }
+  })
+
   const apolloClient = new ApolloClient({
 
-    link: new HttpLink({
-
-      uri:
-      "https://inviting-moray-87.hasura.app/v1/graphql",
-
-      headers: {
-
-        "x-hasura-admin-secret":
-        "AeO8W5bJIyor6FDW3XdJ3clH2YlBtJPAX2MVKPnGraA5r42B7Du34uSQPHtiKeN3"
-
-      }
-
-    }),
-
+    link: authLink.concat(new HttpLink({
+      uri: config.public.hasuraUrl
+    })),
 
     cache: new InMemoryCache()
 
   })
 
-
   return {
-
     provide: {
-
       apollo: apolloClient
-
     }
-
   }
 
 })

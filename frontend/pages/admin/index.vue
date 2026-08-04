@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-  layout:"admin"
+  layout:"admin",
+middleware:"admin"
 })
 import { ref, onMounted } from "vue"
 import { GET_ADMIN_STATS } from "~/graphql/queries"
@@ -90,7 +91,8 @@ loadStats()
       <div>
 
         <h1>
-          Admin Dashboard 👋
+          <svg class="title-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Admin Dashboard
         </h1>
 
         <p>
@@ -112,8 +114,12 @@ loadStats()
 
       <div class="stat-card">
 
+        <div class="stat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg>
+        </div>
+
         <h3>
-          🏪 Businesses
+          Businesses
         </h3>
 
         <p>
@@ -126,8 +132,12 @@ loadStats()
 
       <div class="stat-card pending">
 
+        <div class="stat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+
         <h3>
-          ⏳ Pending
+          Pending
         </h3>
 
         <p>
@@ -140,8 +150,12 @@ loadStats()
 
       <div class="stat-card approved">
 
+        <div class="stat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+
         <h3>
-          ✅ Approved
+          Approved
         </h3>
 
         <p>
@@ -154,8 +168,12 @@ loadStats()
 
       <div class="stat-card rejected">
 
+        <div class="stat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+
         <h3>
-          ❌ Rejected
+          Rejected
         </h3>
 
         <p>
@@ -168,8 +186,12 @@ loadStats()
 
       <div class="stat-card">
 
+        <div class="stat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+
         <h3>
-          👥 Users
+          Users
         </h3>
 
         <p>
@@ -182,8 +204,12 @@ loadStats()
 
       <div class="stat-card">
 
+        <div class="stat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </div>
+
         <h3>
-          📂 Categories
+          Categories
         </h3>
 
         <p>
@@ -212,18 +238,21 @@ loadStats()
       <div class="action-buttons">
 
 
-        <button>
-          🏪 Manage Businesses
+        <button @click="navigateTo('/admin/businesses')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg>
+          Manage Businesses
         </button>
 
 
-        <button>
-          📂 Manage Categories
+        <button @click="navigateTo('/admin/categories')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Manage Categories
         </button>
 
 
-        <button>
-          👥 Manage Users
+        <button @click="navigateTo('/admin/users')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Manage Users
         </button>
 
 
@@ -250,7 +279,7 @@ loadStats()
 
 min-height:100vh;
 
-background:#f8fafc;
+background:var(--color-bg-secondary);
 
 padding:50px 20px;
 
@@ -270,7 +299,7 @@ margin:auto;
 
 .admin-header{
 
-background:#facc15;
+background:var(--color-primary);
 
 padding:40px;
 
@@ -288,7 +317,21 @@ font-size:38px;
 
 font-weight:900;
 
-color:#111827;
+color:var(--color-text-primary);
+
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
+}
+
+.title-icon{
+
+color:var(--color-text-primary);
+
+flex-shrink:0;
 
 }
 
@@ -296,7 +339,7 @@ color:#111827;
 
 .admin-header p{
 
-color:#374151;
+color:var(--color-text-secondary);
 
 font-size:18px;
 
@@ -347,6 +390,58 @@ transform:translateY(-8px);
 .stat-card h3{
 
 font-size:18px;
+
+display:flex;
+
+align-items:center;
+
+gap:8px;
+
+}
+
+.stat-icon{
+
+width:42px;
+
+height:42px;
+
+border-radius:12px;
+
+background:rgba(245,158,11,.12);
+
+color:var(--color-primary);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+margin-bottom:15px;
+
+}
+
+.stat-card.pending .stat-icon{
+
+background:rgba(250,204,21,.15);
+
+color:#d97706;
+
+}
+
+.stat-card.approved .stat-icon{
+
+background:rgba(34,197,94,.12);
+
+color:#16a34a;
+
+}
+
+.stat-card.rejected .stat-icon{
+
+background:rgba(239,68,68,.12);
+
+color:#dc2626;
 
 }
 
@@ -438,15 +533,21 @@ font-weight:700;
 
 transition:.3s;
 
+display:flex;
+
+align-items:center;
+
+gap:10px;
+
 }
 
 
 
 .action-buttons button:hover{
 
-background:#facc15;
+background:var(--color-primary);
 
-color:#111827;
+color:var(--color-text-primary);
 
 }
 
@@ -462,5 +563,29 @@ font-size:28px;
 
 }
 
+</style>
 
+<style>
+:root.dark .admin-page {
+  background: var(--color-dark-bg);
+}
+:root.dark .stat-card {
+  background: var(--color-dark-surface);
+}
+:root.dark .stat-card h3 {
+  color: var(--color-text-primary);
+}
+:root.dark .stat-card p {
+  color: var(--color-text-secondary);
+}
+:root.dark .section-title {
+  color: var(--color-text-primary);
+}
+:root.dark .action-buttons button {
+  background: var(--color-dark-bg-tertiary);
+  color: var(--color-text-primary);
+}
+:root.dark .action-buttons button:hover {
+  background: var(--color-primary);
+}
 </style>

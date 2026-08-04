@@ -1,25 +1,39 @@
 <template>
   <div class="auth-wrapper">
-
     <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-badge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <h1 class="title">Forgot Password</h1>
+        <p class="subtitle">Enter your email to reset your password</p>
+      </div>
 
-      <h2>Forgot Password</h2>
-      <p class="subtitle">Enter your email to reset password</p>
+      <p v-if="message" :class="['msg', messageType]">{{ message }}</p>
 
-      <input v-model="email" type="email" placeholder="Email address" />
+      <label class="field-label" for="email">Email Address</label>
+      <input
+        id="email"
+        v-model="email"
+        type="email"
+        placeholder="you@example.com"
+      />
 
-      <button class="primary" @click="send">
-        Send Reset Link
+      <button
+        class="submit-btn"
+        :disabled="loading"
+        @click="send"
+      >
+        {{ loading ? "Sending..." : "Send Reset Link" }}
       </button>
-
-      <p class="msg">{{ message }}</p>
 
       <NuxtLink to="/login" class="link">
         Back to Login
       </NuxtLink>
-
     </div>
-
   </div>
 </template>
 
@@ -28,14 +42,28 @@ import { ref } from "vue"
 
 const email = ref("")
 const message = ref("")
+const messageType = ref("success")
+const loading = ref(false)
 
 const send = () => {
   if (!email.value) {
+    messageType.value = "error"
     message.value = "Please enter your email"
     return
   }
 
-  message.value = "Reset link sent to " + email.value
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    messageType.value = "error"
+    message.value = "Please enter a valid email address"
+    return
+  }
+
+  loading.value = true
+  setTimeout(() => {
+    loading.value = false
+    messageType.value = "success"
+    message.value = "Reset link sent to " + email.value
+  }, 800)
 }
 </script>
 
@@ -45,45 +73,164 @@ const send = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at top, #1f2937, #0f172a);
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(245, 158, 11, 0.12) 0%, transparent 60%),
+    var(--color-bg-secondary);
+  padding: 100px 20px;
 }
 
 .auth-card {
-  width: 380px;
-  padding: 30px;
-  border-radius: 16px;
-  background: rgba(17,24,39,.95);
-  color: white;
+  width: 420px;
+  padding: 2.75rem 2.5rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-3xl);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-brand {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.brand-badge {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-2xl);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  color: var(--color-text-primary);
+  box-shadow: 0 8px 24px -6px var(--color-primary-glow);
+}
+
+.title {
+  text-align: center;
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.375rem;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--color-text-secondary);
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.375rem;
 }
 
 input {
   width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.15);
-  background: rgba(255,255,255,.06);
-  color: white;
+  padding: 0.8125rem 1rem;
+  margin-bottom: 1.125rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  outline: none;
+  transition: all var(--transition-fast);
 }
 
-.primary {
+input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--color-primary-glow);
+}
+
+input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.submit-btn {
   width: 100%;
-  padding: 12px;
-  background: #facc15;
+  padding: 0.8125rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-xl);
+  color: var(--color-text-primary);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  font-family: inherit;
   cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 16px -4px var(--color-primary-glow);
+}
+
+.submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -6px var(--color-primary-glow);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .msg {
-  margin-top: 10px;
-  color: lightgreen;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-xl);
+  margin-bottom: 1.125rem;
+  font-size: 0.875rem;
+}
+
+.msg.success {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #16a34a;
+}
+
+.msg.error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #dc2626;
 }
 
 .link {
   display: block;
-  margin-top: 15px;
-  color: #facc15;
+  margin-top: 1.25rem;
   text-align: center;
+  color: var(--color-primary-hover);
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+</style>
+
+<style>
+:root.dark .auth-wrapper {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(245, 158, 11, 0.1) 0%, transparent 60%),
+    var(--color-dark-bg);
+}
+
+:root.dark .auth-card {
+  background: var(--color-dark-surface);
+  border-color: var(--color-dark-border);
+}
+
+:root.dark input {
+  background: var(--color-dark-bg-secondary);
+  border-color: var(--color-dark-border);
+  color: var(--color-text-primary);
+}
+
+:root.dark input:focus {
+  border-color: var(--color-primary);
 }
 </style>

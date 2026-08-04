@@ -22,6 +22,20 @@ mutation RejectBusiness($id:uuid!){
 }
 
 `
+export const DELETE_BUSINESS = gql`
+
+mutation DeleteBusiness($id:uuid!){
+
+  delete_businesses_by_pk(
+    id:$id
+  ){
+    id
+    name
+  }
+
+}
+
+`
 export const APPROVE_BUSINESS = gql`
 
 mutation ApproveBusiness($id:uuid!){

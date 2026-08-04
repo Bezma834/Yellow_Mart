@@ -121,7 +121,8 @@ loading.value=false
 
 
 <h1>
-🔒 Change Password
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+Change Password
 </h1>
 
 
@@ -221,7 +222,7 @@ class="error"
 
 min-height:100vh;
 
-background:#f8fafc;
+background:var(--color-bg-secondary);
 
 padding:100px 20px;
 
@@ -235,7 +236,7 @@ max-width:450px;
 
 margin:auto;
 
-background:white;
+background:var(--color-surface);
 
 padding:40px;
 
@@ -245,18 +246,27 @@ box-shadow:
 0 15px 35px rgba(0,0,0,.1);
 
 }
-
-
-
 h1{
 
 text-align:center;
 
 margin-bottom:30px;
 
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+gap:10px;
+
 }
 
+h1 svg{
 
+color:var(--color-primary);
+
+}
 
 label{
 
@@ -266,9 +276,9 @@ font-weight:700;
 
 margin-top:20px;
 
+color:var(--color-text-secondary);
+
 }
-
-
 
 input{
 
@@ -280,13 +290,31 @@ margin-top:8px;
 
 border-radius:12px;
 
-border:1px solid #ddd;
+border:1px solid var(--color-border);
 
 font-size:16px;
 
+font-family:inherit;
+
+background:var(--color-surface);
+
+color:var(--color-text-primary);
+
+outline:none;
+
+transition:.3s;
+
+box-sizing:border-box;
+
 }
 
+input:focus{
 
+border-color:var(--color-primary);
+
+box-shadow:0 0 0 4px var(--color-primary-glow);
+
+}
 
 button{
 
@@ -300,26 +328,29 @@ border:none;
 
 border-radius:12px;
 
-background:#facc15;
+background:var(--color-primary);
 
-color:white;
+color:var(--color-text-primary);
 
 font-size:16px;
 
 font-weight:700;
 
+font-family:inherit;
+
 cursor:pointer;
 
+transition:.3s;
+
 }
-
-
 
 button:hover{
 
-background:#facc15;
+background:var(--color-primary-hover);
+
+transform:translateY(-2px);
 
 }
-
 
 
 button:disabled{
@@ -365,4 +396,16 @@ text-align:center;
 }
 
 
+</style>
+
+<style>
+:root.dark .page { background: var(--color-dark-bg); }
+:root.dark .card { background: var(--color-dark-surface); }
+:root.dark h1 { color: var(--color-text-primary); }
+:root.dark label { color: var(--color-text-secondary); }
+:root.dark input { background: var(--color-dark-bg-secondary); border-color: var(--color-dark-border); color: var(--color-text-primary); }
+:root.dark button { background: var(--color-primary); color: var(--color-text-primary); }
+:root.dark button:hover { background: var(--color-primary-hover); }
+:root.dark .success { background: var(--color-dark-surface); color: var(--color-text-primary); border: 1px solid var(--color-dark-border); }
+:root.dark .error { background: var(--color-dark-surface); color: var(--color-text-primary); border: 1px solid var(--color-dark-border); }
 </style>

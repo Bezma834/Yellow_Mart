@@ -95,7 +95,11 @@ products and services.
 
 
 <div class="icon">
-🔍
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <circle cx="11" cy="11" r="8"/>
+  <path d="m21 21-4.35-4.35"/>
+  <line x1="8" y1="11" x2="14" y2="11"/>
+</svg>
 </div>
 
 
@@ -122,7 +126,10 @@ when they search for services.
 
 
 <div class="icon">
-📍
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+  <circle cx="12" cy="10" r="3"/>
+</svg>
 </div>
 
 
@@ -150,7 +157,9 @@ to nearby customers.
 
 
 <div class="icon">
-⭐
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+</svg>
 </div>
 
 
@@ -178,7 +187,10 @@ with important information.
 
 
 <div class="icon">
-📈
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+  <polyline points="17 6 23 6 23 12"/>
+</svg>
 </div>
 
 
@@ -420,7 +432,7 @@ Add Your Business
 
 .advertise-page{
 
-background:#f8fafc;
+background:var(--color-bg-secondary);
 
 }
 
@@ -529,9 +541,9 @@ color:#e2e8f0;
 
 display:inline-block;
 
-background:#facc15;
+background:var(--color-primary);
 
-color:#0f172a;
+color:var(--color-text-primary);
 
 padding:15px 40px;
 
@@ -579,7 +591,7 @@ margin:auto;
 
 font-size:18px;
 
-color:#64748b;
+color:var(--color-text-tertiary);
 
 }
 
@@ -610,7 +622,7 @@ gap:25px;
 
 .benefit-card{
 
-background:white;
+background:var(--color-surface);
 
 padding:35px;
 
@@ -638,7 +650,23 @@ transform:translateY(-10px);
 
 .icon{
 
-font-size:40px;
+width:64px;
+
+height:64px;
+
+margin:0 auto;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+background:var(--color-primary-light);
+
+color:var(--color-primary-dark);
+
+border-radius:var(--radius-2xl);
 
 }
 
@@ -688,7 +716,7 @@ margin-top:40px;
 
 .step{
 
-background:white;
+background:var(--color-surface);
 
 padding:35px;
 
@@ -700,7 +728,7 @@ border-radius:20px;
 
 .step span{
 
-background:#facc15;
+background:var(--color-primary);
 
 padding:15px 22px;
 
@@ -788,7 +816,7 @@ display:inline-block;
 
 margin-top:20px;
 
-background:#facc15;
+background:var(--color-primary);
 
 padding:15px 40px;
 
@@ -798,7 +826,7 @@ font-weight:900;
 
 text-decoration:none;
 
-color:#0f172a;
+color:var(--color-text-primary);
 
 }
 
@@ -845,4 +873,26 @@ font-size:35px;
 
 
 
+</style>
+
+<style>
+:root.dark .advertise-page {
+  background: var(--color-dark-bg);
+}
+:root.dark .intro p {
+  color: var(--color-text-secondary);
+}
+:root.dark .benefit-card {
+  background: var(--color-dark-surface);
+}
+:root.dark .step {
+  background: var(--color-dark-surface);
+}
+:root.dark .hero-btn,
+:root.dark .cta-btn {
+  color: var(--color-dark-bg);
+}
+:root.dark .growth {
+  background: var(--color-dark-bg-secondary);
+}
 </style>

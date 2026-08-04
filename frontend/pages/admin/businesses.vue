@@ -9,9 +9,14 @@ import BusinessCard from "~/components/BusinessCard.vue"
 
 import {
   GET_PENDING_BUSINESSES,
-  APPROVE_BUSINESS,
-  REJECT_BUSINESS
+  GET_BUSINESS_OWNER,
+  DELETE_USER
 } from "~/graphql/queries"
+
+import {
+  APPROVE_BUSINESS,
+  DELETE_BUSINESS
+} from "~/graphql/mutations"
 
 
 const { $apollo } = useNuxtApp() as any
@@ -20,6 +25,9 @@ const { $apollo } = useNuxtApp() as any
 const businesses = ref<any[]>([])
 
 const loading = ref(true)
+
+const statusMsg = ref("")
+const statusType = ref<"success" | "error">("success")
 
 
 
@@ -67,6 +75,11 @@ loading.value=false
 }
 
 
+const showStatus = (msg: string, type: "success" | "error") => {
+  statusMsg.value = msg
+  statusType.value = type
+  setTimeout(() => { statusMsg.value = "" }, 4000)
+}
 
 
 // APPROVE
@@ -87,7 +100,7 @@ id
 
 })
 
-
+showStatus("Business approved successfully", "success")
 loadBusinesses()
 
 
@@ -96,6 +109,7 @@ loadBusinesses()
 catch(error){
 
 console.error(error)
+showStatus("Failed to approve business", "error")
 
 }
 
@@ -103,40 +117,53 @@ console.error(error)
 }
 
 
+// Fetch owner_id + hard-delete business AND owner account
+const hardDeleteBusiness = async (id: string) => {
+  try {
 
-// REJECT
+    const { data } = await $apollo.query({
+      query: GET_BUSINESS_OWNER,
+      variables: { id },
+      fetchPolicy: "network-only"
+    })
 
-const rejectBusiness = async(id:string)=>{
+    const ownerId = data?.businesses_by_pk?.owner_id
 
+    // Delete the owner account first
+    if (ownerId) {
+      await $apollo.mutate({
+        mutation: DELETE_USER,
+        variables: { id: ownerId }
+      })
+    }
 
-try{
+    // Then delete the business
+    await $apollo.mutate({
+      mutation: DELETE_BUSINESS,
+      variables: { id }
+    })
 
-
-await $apollo.mutate({
-
-mutation:REJECT_BUSINESS,
-
-variables:{
-id
+    showStatus("Business deleted and owner account removed permanently", "success")
+    loadBusinesses()
+  } catch (error) {
+    console.error("DELETE ERROR:", error)
+    showStatus("Failed to delete business", "error")
+  }
 }
 
-})
 
-
-loadBusinesses()
-
-
-}
-
-catch(error){
-
-console.error(error)
-
+// REJECT — hard delete + remove owner account
+const rejectBusiness = async (id: string) => {
+  if (!window.confirm("Rejecting will permanently delete this business AND the owner's account. Continue?")) return
+  await hardDeleteBusiness(id)
 }
 
 
+// DELETE — hard delete + remove owner account
+const deleteBusiness = async (id: string) => {
+  if (!window.confirm("Are you sure? This will permanently delete this business AND the owner's account.")) return
+  await hardDeleteBusiness(id)
 }
-
 
 
 onMounted(()=>{
@@ -159,8 +186,17 @@ loadBusinesses()
 
 
 <h1>
-⏳ Pending Businesses
+<svg class="title-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+Pending Businesses
 </h1>
+
+
+<div
+v-if="statusMsg"
+:class="['status-msg', statusType]"
+>
+{{ statusMsg }}
+</div>
 
 
 
@@ -200,7 +236,8 @@ class="business-item"
 class="approve"
 @click="approveBusiness(business.id)"
 >
-✅ Approve
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+Approve
 </button>
 
 
@@ -208,7 +245,17 @@ class="approve"
 class="reject"
 @click="rejectBusiness(business.id)"
 >
-❌ Reject
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+Reject
+</button>
+
+
+<button
+class="delete"
+@click="deleteBusiness(business.id)"
+>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+Delete
 </button>
 
 
@@ -228,7 +275,8 @@ v-else
 class="empty"
 >
 
-No pending businesses 🎉
+<svg class="empty-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+<p>No pending businesses</p>
 
 </div>
 
@@ -250,7 +298,7 @@ No pending businesses 🎉
 
 min-height:100vh;
 
-background:#f8fafc;
+background:var(--color-bg-secondary);
 
 padding:50px 20px;
 
@@ -274,8 +322,48 @@ font-weight:900;
 
 margin-bottom:40px;
 
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
 }
 
+.title-icon{
+
+color:var(--color-primary);
+
+flex-shrink:0;
+
+}
+
+
+.status-msg {
+  padding: 14px 24px;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  margin-bottom: 24px;
+  text-align: center;
+  animation: fadeSlideIn 0.3s ease;
+}
+
+.status-msg.success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-msg.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 
 .business-grid{
@@ -325,11 +413,31 @@ padding:12px 20px;
 
 border:none;
 
-border-radius:12px;
+border-radius:var(--radius-lg);
 
 cursor:pointer;
 
 font-weight:700;
+
+transition: all 0.2s ease;
+
+display:flex;
+
+align-items:center;
+
+gap:8px;
+
+justify-content:center;
+
+}
+
+
+
+.actions button:hover{
+
+transform: translateY(-2px);
+
+box-shadow: var(--shadow-md);
 
 }
 
@@ -355,6 +463,22 @@ color:white;
 
 
 
+.delete{
+
+background:#991b1b;
+
+color:white;
+
+}
+
+.delete:hover{
+
+background:#7f1d1d;
+
+}
+
+
+
 .empty{
 
 background:white;
@@ -365,8 +489,56 @@ border-radius:25px;
 
 text-align:center;
 
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+gap:12px;
+
 }
 
+.empty-icon{
 
+color:var(--color-primary);
 
+}
+
+.empty p{
+
+font-size:17px;
+
+font-weight:600;
+
+color:var(--color-text-secondary);
+
+}
+
+</style>
+
+<style>
+:root.dark .status-msg.success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border-color: rgba(34, 197, 94, 0.25);
+}
+:root.dark .status-msg.error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+:root.dark .business-item {
+  background: var(--color-dark-surface);
+}
+:root.dark .business-item h3 {
+  color: var(--color-text-primary);
+}
+:root.dark .business-item p {
+  color: var(--color-text-secondary);
+}
+:root.dark .empty {
+  background: var(--color-dark-surface);
+  color: var(--color-text-secondary);
+}
 </style>

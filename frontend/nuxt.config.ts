@@ -2,24 +2,18 @@ export default defineNuxtConfig({
 
   modules: [
     "@nuxt/ui",
-    "@nuxtjs/google-fonts"
+    "@nuxtjs/google-fonts",
+    "@nuxtjs/i18n"
   ],
 
   css: [
-    "@fortawesome/fontawesome-free/css/all.css",
     "~/assets/css/main.css"
   ],
 
   googleFonts: {
     families: {
-      Inter: true,
-      Poppins: [
-        400,
-        500,
-        600,
-        700,
-        800
-      ]
+      Inter: [400, 500, 600, 700],
+      Poppins: [400, 500, 600, 700, 800]
     }
   },
 
@@ -32,10 +26,10 @@ export default defineNuxtConfig({
   layouts: true,
 
   runtimeConfig: {
-  public: {
-    hasuraUrl:
-      "https://inviting-moray-87.hasura.app/v1/graphql"
+    public: {
+      hasuraUrl: "https://inviting-moray-87.hasura.app/v1/graphql",
+      hasuraSecret: ""
+    }
   }
-}
 
 })

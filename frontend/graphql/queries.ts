@@ -256,6 +256,34 @@ $lng: numeric
 }
 
 `
+
+// ===============================
+// Check Business Uniqueness (name + phone)
+// ===============================
+export const CHECK_BUSINESS_UNIQUENESS = gql`
+
+query CheckBusinessUniqueness($name: String!, $phone: String!) {
+
+  nameClash: businesses(
+    where: { name: { _eq: $name } }
+    limit: 1
+  ) {
+    id
+    name
+  }
+
+  phoneClash: businesses(
+    where: { phone: { _eq: $phone } }
+    limit: 1
+  ) {
+    id
+    name
+    phone
+  }
+
+}
+
+`
 // ===============================
 // Add Favorite
 // ===============================
@@ -428,6 +456,21 @@ query GetPendingBusinesses {
       name
     }
 
+  }
+
+}
+
+`
+// ===============================
+// Get Business Owner
+// ===============================
+export const GET_BUSINESS_OWNER = gql`
+
+query GetBusinessOwner($id:uuid!){
+
+  businesses_by_pk(id:$id){
+    id
+    owner_id
   }
 
 }
@@ -763,24 +806,39 @@ id
 `
 export const LOGIN_USER = gql`
 
-query Login(
+query LoginUser(
 $email:String!,
 $password:String!
 ){
 
 users(
 where:{
+
 email:{
 _eq:$email
 }
+
 password:{
 _eq:$password
 }
+
 }
+
 ){
 
 id
+
 email
+
+fullname
+
+username
+
+avatar
+
+phone
+
+role
 
 }
 

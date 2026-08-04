@@ -1,105 +1,96 @@
 <template>
   <div class="auth-wrapper">
-
     <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-badge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <h1 class="title">Welcome Back</h1>
+        <p class="subtitle">Login to your Yellow-Mart account</p>
+      </div>
 
-      <h1 class="title">
-        Welcome Back 👋
-      </h1>
-
-      <p class="subtitle">
-        Login to your Yellow-Mart account
-      </p>
-
-
-      <div
-        v-if="error"
-        class="error"
-      >
+      <div v-if="error" class="error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
         {{ error }}
       </div>
 
-
+      <label class="field-label" for="identifier">Email or Username</label>
       <input
+        id="identifier"
         v-model="identifier"
         type="text"
-        placeholder="Username or Email"
+        placeholder="you@example.com"
       />
 
-
+      <label class="field-label" for="password">Password</label>
       <div class="password-box">
-
         <input
+          id="password"
           v-model="password"
           :type="showPassword ? 'text' : 'password'"
-          placeholder="Password"
+          placeholder="Enter your password"
         />
-
-
         <button
           class="eye"
           type="button"
+          :aria-label="showPassword ? 'Hide password' : 'Show password'"
           @click="showPassword = !showPassword"
         >
-          {{ showPassword ? "🙈" : "👁️" }}
+          <svg v-if="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
         </button>
-
       </div>
 
-
+      <div class="options-row">
+        <NuxtLink class="forgot" to="/forgot-password">Forgot Password?</NuxtLink>
+      </div>
 
       <button
         class="login-btn"
         :disabled="loading"
         @click="login"
       >
-
+        <svg v-if="!loading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
         {{ loading ? "Logging in..." : "Login" }}
-
       </button>
 
-
-
-      <NuxtLink
-        class="forgot"
-        to="/forgot-password"
-      >
-        Forgot Password?
-      </NuxtLink>
-
-
-
       <div class="divider">
-        OR
+        <span>or continue with</span>
       </div>
 
-
-
-    <GoogleLogin :callback="googleLogin">
-  <button class="google-btn" type="button">
-    <img
-  class="google-icon"
-  src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-  alt="Google"
-/>
-    Continue with Google
-  </button>
-</GoogleLogin>
-
+      <GoogleLogin :callback="googleLogin">
+        <button class="google-btn" type="button" :disabled="loading">
+          <img
+            class="google-icon"
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+          />
+          Continue with Google
+        </button>
+      </GoogleLogin>
 
       <p class="signup">
-
         Don't have an account?
-
-        <NuxtLink to="/signup">
-          Sign up
-        </NuxtLink>
-
+        <NuxtLink to="/signup">Sign up</NuxtLink>
       </p>
-
-
     </div>
-
   </div>
 </template>
 
@@ -164,30 +155,18 @@ const login = async () => {
       }
     )
 
-
     const data = await res.json()
-
 
     if (!res.ok) {
 
-      error.value =
-        data.message || "Invalid email or password"
+      error.value = data.message || "Invalid email or password"
 
       return
     }
 
+    localStorage.setItem("token", data.token)
 
-    localStorage.setItem(
-      "token",
-      data.token
-    )
-
-
-    localStorage.setItem(
-      "user",
-      JSON.stringify(data.user)
-    )
-
+    localStorage.setItem("user", JSON.stringify(data.user))
 
     if (data.user?.role?.trim() === "admin") {
 
@@ -199,18 +178,59 @@ const login = async () => {
 
     }
 
-
   } catch (err) {
 
     console.error("LOGIN ERROR:", err)
 
-    error.value =
-      "Cannot connect to server. Please try again."
+    error.value = "Cannot connect to server. Please try again."
 
   } finally {
 
     loading.value = false
 
+  }
+}
+
+
+const googleLogin = async (response: any) => {
+
+  error.value = ""
+  loading.value = true
+
+  try {
+
+    const res = await fetch(
+      "https://yellow-mart-backend.onrender.com/api/auth/google",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: response.credential
+        })
+      }
+    )
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      error.value = data.message || "Google login failed"
+      return
+    }
+
+    localStorage.setItem("token", data.token)
+    localStorage.setItem("user", JSON.stringify(data.user))
+
+    if (data.user?.role?.trim() === "admin") {
+      router.push("/admin")
+    } else {
+      router.push("/")
+    }
+
+  } catch (err) {
+    console.error("GOOGLE LOGIN ERROR:", err)
+    error.value = "Google login failed. Please try again."
+  } finally {
+    loading.value = false
   }
 
 }
@@ -224,263 +244,473 @@ const login = async () => {
 
 .auth-wrapper {
 
-  min-height:100vh;
+  min-height: 100vh;
 
-  display:flex;
+  display: flex;
 
-  justify-content:center;
+  justify-content: center;
 
-  align-items:center;
+  align-items: center;
 
   background:
-  linear-gradient(
-    rgba(15,23,42,.75),
-    rgba(15,23,42,.75)
-  ),
-  url("/homepage.jpg");
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(245, 158, 11, 0.12) 0%, transparent 60%),
+    var(--color-bg-secondary);
 
-  background-size:cover;
-
-  padding:80px 20px;
+  padding: 100px 20px;
 
 }
-
-
 
 .auth-card {
 
-  width:420px;
+  width: 420px;
 
-  padding:35px;
+  padding: 2.75rem 2.5rem;
 
-  background:white;
+  background: var(--color-surface);
 
-  border-radius:20px;
+  border-radius: var(--radius-3xl);
 
-  box-shadow:
-  0 20px 50px rgba(0,0,0,.25);
+  border: 1px solid var(--color-border-light);
+
+  box-shadow: var(--shadow-lg);
 
 }
 
+.auth-brand {
 
+  text-align: center;
+
+  margin-bottom: 1.75rem;
+
+}
+
+.brand-badge {
+
+  width: 52px;
+
+  height: 52px;
+
+  margin: 0 auto 1rem;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: var(--radius-2xl);
+
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+
+  color: var(--color-text-primary);
+
+  box-shadow: 0 8px 24px -6px var(--color-primary-glow);
+
+}
 
 .title {
 
-  text-align:center;
+  text-align: center;
 
-  font-size:30px;
+  font-size: 1.625rem;
 
-  font-weight:900;
+  font-weight: 800;
+
+  letter-spacing: -0.02em;
+
+  margin: 0 0 0.375rem;
 
 }
-
-
 
 .subtitle {
 
-  text-align:center;
+  text-align: center;
 
-  color:#64748b;
+  color: var(--color-text-secondary);
 
-  margin-bottom:25px;
+  margin: 0;
+
+  font-size: 0.9375rem;
 
 }
 
+.field-label {
 
+  display: block;
+
+  font-size: 0.8125rem;
+
+  font-weight: 600;
+
+  color: var(--color-text-secondary);
+
+  margin-bottom: 0.375rem;
+
+}
 
 input {
 
-  width:100%;
+  width: 100%;
 
-  padding:13px;
+  padding: 0.8125rem 1rem;
 
-  margin-bottom:15px;
+  margin-bottom: 1.125rem;
 
-  border-radius:10px;
+  border-radius: var(--radius-xl);
 
-  border:1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
 
-  outline:none;
+  background: var(--color-surface);
+
+  color: var(--color-text-primary);
+
+  font-size: 0.9375rem;
+
+  font-family: inherit;
+
+  outline: none;
+
+  transition: all var(--transition-fast);
 
 }
-
-
 
 input:focus {
 
-  border-color:#facc15;
+  border-color: var(--color-primary);
+
+  box-shadow: 0 0 0 4px var(--color-primary-glow);
 
 }
 
+input::placeholder {
 
+  color: var(--color-text-tertiary);
+
+}
 
 .password-box {
 
-  position:relative;
+  position: relative;
 
 }
 
+.password-box input {
 
+  padding-right: 2.75rem;
+
+}
 
 .eye {
 
-  position:absolute;
+  position: absolute;
 
-  right:10px;
+  right: 0.625rem;
 
-  top:8px;
+  top: 0.375rem;
 
-  border:none;
+  width: 36px;
 
-  background:none;
+  height: 36px;
 
-  cursor:pointer;
+  display: flex;
 
-}
+  align-items: center;
 
+  justify-content: center;
 
+  border: none;
 
-.login-btn {
+  background: none;
 
-  width:100%;
+  color: var(--color-text-tertiary);
 
-  padding:13px;
+  cursor: pointer;
 
-  background:#facc15;
-
-  border:none;
-
-  border-radius:10px;
-
-  font-weight:800;
-
-  cursor:pointer;
+  transition: color var(--transition-fast);
 
 }
 
+.eye:hover {
 
-
-.login-btn:hover {
-
-  background:#eab308;
+  color: var(--color-text-secondary);
 
 }
 
+.options-row {
 
+  display: flex;
 
-.login-btn:disabled {
+  justify-content: flex-end;
 
-  opacity:.6;
-
-}
-
-
-
-.error {
-
-  background:#fee2e2;
-
-  color:#b91c1c;
-
-  padding:10px;
-
-  border-radius:10px;
-
-  margin-bottom:15px;
+  margin: -0.375rem 0 1.25rem;
 
 }
-
-
 
 .forgot {
 
-  display:block;
+  font-size: 0.8125rem;
 
-  text-align:right;
+  font-weight: 600;
 
-  margin-top:15px;
+  color: var(--color-primary-hover);
 
-  color:#2563eb;
+  text-decoration: none;
 
 }
 
+.forgot:hover {
 
+  text-decoration: underline;
+
+}
+
+.login-btn {
+
+  width: 100%;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 0.5rem;
+
+  padding: 0.8125rem;
+
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+
+  border: none;
+
+  border-radius: var(--radius-xl);
+
+  color: var(--color-text-primary);
+
+  font-weight: 700;
+
+  font-size: 0.9375rem;
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition: all var(--transition-fast);
+
+  box-shadow: 0 4px 16px -4px var(--color-primary-glow);
+
+}
+
+.login-btn:hover {
+
+  transform: translateY(-1px);
+
+  box-shadow: 0 8px 24px -6px var(--color-primary-glow);
+
+}
+
+.login-btn:disabled {
+
+  opacity: 0.6;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+}
 
 .divider {
 
-  text-align:center;
+  display: flex;
 
-  margin:20px;
+  align-items: center;
 
-  color:#64748b;
+  gap: 1rem;
 
-}
+  margin: 1.5rem 0;
 
+  color: var(--color-text-tertiary);
 
+  font-size: 0.8125rem;
 
-.google,
+  text-transform: uppercase;
 
-
-
-.google {
-
-  background:white;
-
-  border:1px solid #ddd;
+  letter-spacing: 0.05em;
 
 }
 
+.divider::before,
 
+.divider::after {
 
+  content: "";
 
+  flex: 1;
+
+  height: 1px;
+
+  background: var(--color-border);
+
+}
+
+.google-btn {
+
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 0.8125rem;
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-xl);
+
+  background: var(--color-surface);
+
+  color: var(--color-text-primary);
+
+  font-weight: 600;
+
+  font-size: 0.9375rem;
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition: all var(--transition-fast);
+
+}
+
+.google-btn:hover {
+
+  background: var(--color-bg-secondary);
+
+  border-color: var(--color-border-hover);
+
+}
+
+.google-btn:disabled {
+
+  opacity: 0.6;
+
+  cursor: not-allowed;
+
+}
+
+.google-icon {
+
+  width: 20px;
+
+  height: 20px;
+
+  object-fit: contain;
+
+  flex-shrink: 0;
+
+}
 
 .signup {
 
-  text-align:center;
+  text-align: center;
 
-  margin-top:20px;
+  margin-top: 1.5rem;
+
+  color: var(--color-text-secondary);
+
+  font-size: 0.875rem;
 
 }
-
-
 
 .signup a {
 
-  color:#eab308;
+  color: var(--color-primary-hover);
 
-  font-weight:bold;
+  font-weight: 700;
+
+  text-decoration: none;
 
 }
-.google-btn{
-  width:100%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:12px;
 
-  padding:12px;
+.signup a:hover {
 
-  border:1px solid #d1d5db;
-  border-radius:10px;
+  text-decoration: underline;
 
-  background:white;
-
-  cursor:pointer;
-
-  font-weight:700;
-
-  transition:.2s;
 }
 
-.google-btn:hover{
-  background:#f8fafc;
+.error {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 0.5rem;
+
+  background: rgba(239, 68, 68, 0.08);
+
+  color: #dc2626;
+
+  padding: 0.75rem 1rem;
+
+  border-radius: var(--radius-xl);
+
+  margin-bottom: 1.125rem;
+
+  font-size: 0.875rem;
+
+  border: 1px solid rgba(239, 68, 68, 0.2);
+
 }
 
-.google-icon{
-  width:22px;
-  height:22px;
-  object-fit:contain;
-  flex-shrink:0;
+</style>
+
+<style>
+:root.dark .auth-wrapper {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(245, 158, 11, 0.1) 0%, transparent 60%),
+    var(--color-dark-bg);
 }
 
+:root.dark .auth-card {
+  background: var(--color-dark-surface);
+  border-color: var(--color-dark-border);
+}
+
+:root.dark input {
+  background: var(--color-dark-bg-secondary);
+  border-color: var(--color-dark-border);
+  color: var(--color-text-primary);
+}
+
+:root.dark input:focus {
+  border-color: var(--color-primary);
+}
+
+:root.dark .divider {
+  color: var(--color-text-secondary);
+}
+
+:root.dark .divider::before,
+:root.dark .divider::after {
+  background: var(--color-dark-border);
+}
+
+:root.dark .google-btn {
+  background: var(--color-dark-bg-secondary);
+  border-color: var(--color-dark-border);
+  color: var(--color-text-primary);
+}
+
+:root.dark .google-btn:hover {
+  background: var(--color-dark-bg-tertiary);
+}
+
+:root.dark .error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
 </style>
