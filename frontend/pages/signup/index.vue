@@ -14,13 +14,13 @@
         <p class="subtitle">Join Yellow-Mart today</p>
       </div>
 
-      <div v-if="error" class="error">
+      <div v-if="errorMsg" class="error">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/>
           <line x1="12" y1="8" x2="12" y2="12"/>
           <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-        {{ error }}
+        {{ errorMsg }}
       </div>
 
       <label class="field-label" for="username">Username</label>
@@ -45,7 +45,11 @@
         v-model="email"
         type="email"
         placeholder="you@example.com"
+        @blur="checkEmail"
       />
+      <p v-if="emailCheckMsg" :class="['email-check', emailCheckType]">
+        {{ emailCheckMsg }}
+      </p>
 
       <label class="field-label" for="phone">Phone Number</label>
       <input
@@ -141,7 +145,9 @@
 <script setup lang="ts">
 import { ref, computed } from "vue"
 import { useRouter } from "vue-router"
+import { useToast } from "~/composables/useToast"
 const router = useRouter()
+const { success, error } = useToast()
 
 const username = ref("")
 const fullName = ref("")
@@ -154,10 +160,15 @@ const avatar = ref<File | null>(null)
 
 const agree = ref(false)
 
-const error = ref("")
+const errorMsg = ref("")
 const loading = ref(false)
 
 const showPassword = ref(false)
+
+const emailCheckMsg = ref("")
+const emailCheckType = ref<"ok" | "bad">("ok")
+const emailChecked = ref(false)
+const emailChecking = ref(false)
 
 const strength = computed(() => {
 
@@ -177,6 +188,52 @@ const validateEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
+const checkEmail = async () => {
+  const value = email.value.trim()
+
+  emailCheckMsg.value = ""
+  emailChecked.value = false
+
+  if (!value) return
+
+  if (!validateEmail(value)) {
+    emailCheckMsg.value = "Please enter a valid email address"
+    emailCheckType.value = "bad"
+    return
+  }
+
+  emailChecking.value = true
+  emailCheckMsg.value = "Checking email..."
+
+  try {
+    const res = await fetch(
+      "https://yellow-mart-backend.onrender.com/api/auth/check-email",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: value })
+      }
+    )
+
+    const data = await res.json().catch(() => ({ valid: false, message: "Server error. Please try again." }))
+
+    if (data.valid) {
+      emailCheckMsg.value = "Email looks good"
+      emailCheckType.value = "ok"
+      emailChecked.value = true
+    } else {
+      emailCheckMsg.value = data.message || "This email address does not exist"
+      emailCheckType.value = "bad"
+    }
+  } catch (err) {
+    console.error(err)
+    emailCheckMsg.value = "Could not verify email. Please try again."
+    emailCheckType.value = "bad"
+  } finally {
+    emailChecking.value = false
+  }
+}
+
 const handleAvatar = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
@@ -186,7 +243,7 @@ const handleAvatar = (event: Event) => {
 
 const signup = async () => {
 
-  error.value = ""
+  errorMsg.value = ""
 
   if (
     !username.value.trim() ||
@@ -195,27 +252,40 @@ const signup = async () => {
     !password.value ||
     !confirmPassword.value
   ) {
-    error.value = "Please fill in all required fields"
+    errorMsg.value = "Please fill in all required fields"
     return
   }
 
   if (!validateEmail(email.value)) {
-    error.value = "Please enter a valid email address"
+    errorMsg.value = "Please enter a valid email address"
+    return
+  }
+
+  if (emailChecked.value === false && !emailCheckMsg.value) {
+    await checkEmail()
+  }
+
+  if (emailCheckType.value === "bad" || emailChecked.value === false) {
+    if (!emailCheckMsg.value) {
+      emailCheckMsg.value = "This email address does not exist. Please use a real, working email."
+      emailCheckType.value = "bad"
+    }
+    errorMsg.value = "Please use a real, working email address"
     return
   }
 
   if (password.value.length < 6) {
-    error.value = "Password must be at least 6 characters"
+    errorMsg.value = "Password must be at least 6 characters"
     return
   }
 
   if (password.value !== confirmPassword.value) {
-    error.value = "Passwords do not match"
+    errorMsg.value = "Passwords do not match"
     return
   }
 
   if (!agree.value) {
-    error.value = "Please accept the Terms & Conditions"
+    errorMsg.value = "Please accept the Terms & Conditions"
     return
   }
 
@@ -241,28 +311,22 @@ const signup = async () => {
       }
     )
 
-    const data = await res.json()
+    const data = await res.json().catch(() => ({ message: "Server error. Please try again." }))
 
     if (!res.ok) {
-      error.value = data.message || "Signup failed"
+      errorMsg.value = data.message || "Signup failed"
+      error(data.message || "Signup failed")
       return
     }
 
-    if (data.token) {
-
-      localStorage.setItem("token", data.token)
-      localStorage.setItem("user", JSON.stringify(data.user))
-
-      if (data.user.role?.trim() === "admin") {
-        router.push("/admin")
-      } else {
-        router.push("/")
-      }
-    }
+    localStorage.setItem("pendingEmail", email.value)
+    success("Account created! Check your email for the verification code.")
+    router.push("/signup/verify-email?email=" + encodeURIComponent(email.value))
   }
   catch (err) {
     console.error(err)
-    error.value = "Cannot connect to server"
+    errorMsg.value = "Cannot connect to server"
+    error("Cannot connect to server")
   }
   finally {
     loading.value = false
@@ -271,7 +335,7 @@ const signup = async () => {
 
 const googleLogin = async (response: any) => {
 
-  error.value = ""
+  errorMsg.value = ""
   loading.value = true
 
   try {
@@ -287,10 +351,10 @@ const googleLogin = async (response: any) => {
       }
     )
 
-    const data = await res.json()
+    const data = await res.json().catch(() => ({ message: "Google login failed" }))
 
     if (!res.ok) {
-      error.value = data.message || "Google login failed"
+      errorMsg.value = data.message || "Google login failed"
       return
     }
 
@@ -305,7 +369,7 @@ const googleLogin = async (response: any) => {
 
   } catch (err) {
     console.error(err)
-    error.value = "Google login failed"
+    errorMsg.value = "Google login failed"
   } finally {
     loading.value = false
   }
@@ -459,6 +523,32 @@ input:focus {
 input::placeholder {
 
   color: var(--color-text-tertiary);
+
+}
+
+.email-check {
+
+  font-size: 0.8125rem;
+
+  margin: -0.625rem 0 1.125rem;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 0.375rem;
+
+}
+
+.email-check.ok {
+
+  color: #16a34a;
+
+}
+
+.email-check.bad {
+
+  color: #dc2626;
 
 }
 

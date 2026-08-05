@@ -5,6 +5,7 @@
       <slot />
     </PageTransition>
     <Footer />
+    <AppToast />
 
     <Transition name="fade-up">
       <button

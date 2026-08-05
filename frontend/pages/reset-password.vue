@@ -8,35 +8,44 @@
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
         </div>
-        <h1 class="title">Forgot Password</h1>
-        <p class="subtitle">Enter your username and the email you signed up with</p>
+        <h1 class="title">Reset Password</h1>
+        <p class="subtitle">Choose a new password for your account</p>
       </div>
 
-      <p v-if="message" :class="['msg', messageType]">{{ message }}</p>
+      <template v-if="hasToken">
+        <p v-if="message" :class="['msg', messageType]">{{ message }}</p>
 
-      <label class="field-label" for="username">Username</label>
-      <input
-        id="username"
-        v-model="username"
-        type="text"
-        placeholder="Your account username"
-      />
+        <label class="field-label" for="password">New Password</label>
+        <input
+          id="password"
+          v-model="password"
+          type="password"
+          placeholder="Enter a new password"
+        />
 
-      <label class="field-label" for="email">Email Address</label>
-      <input
-        id="email"
-        v-model="email"
-        type="email"
-        placeholder="you@example.com"
-      />
+        <label class="field-label" for="confirmPassword">Confirm Password</label>
+        <input
+          id="confirmPassword"
+          v-model="confirmPassword"
+          type="password"
+          placeholder="Repeat your new password"
+        />
 
-      <button
-        class="submit-btn"
-        :disabled="loading"
-        @click="send"
-      >
-        {{ loading ? "Sending..." : "Send Reset Link" }}
-      </button>
+        <button
+          class="submit-btn"
+          :disabled="loading"
+          @click="reset"
+        >
+          {{ loading ? "Resetting..." : "Reset Password" }}
+        </button>
+      </template>
+
+      <div v-else class="invalid-state">
+        <p>This reset link is invalid. Please request a new one.</p>
+        <NuxtLink to="/forgot-password" class="link">
+          Request a new link
+        </NuxtLink>
+      </div>
 
       <NuxtLink to="/login" class="link">
         Back to Login
@@ -46,33 +55,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref, computed } from "vue"
+import { useRoute } from "vue-router"
 import { useToast } from "~/composables/useToast"
 
 const { success, error } = useToast()
+const route = useRoute()
 
-const username = ref("")
-const email = ref("")
+const token = computed(() => String(route.query.token || ""))
+
+const hasToken = computed(() => token.value.length > 0)
+
+const password = ref("")
+const confirmPassword = ref("")
 const message = ref("")
 const messageType = ref("success")
 const loading = ref(false)
 
-const send = async () => {
-  if (!username.value.trim()) {
+const reset = async () => {
+  if (!password.value || !confirmPassword.value) {
     messageType.value = "error"
-    message.value = "Please enter your username"
+    message.value = "Please fill in both password fields"
     return
   }
 
-  if (!email.value) {
+  if (password.value.length < 6) {
     messageType.value = "error"
-    message.value = "Please enter your email"
+    message.value = "Password must be at least 6 characters"
     return
   }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+  if (password.value !== confirmPassword.value) {
     messageType.value = "error"
-    message.value = "Please enter a valid email address"
+    message.value = "Passwords do not match"
     return
   }
 
@@ -81,13 +96,13 @@ const send = async () => {
 
   try {
     const res = await fetch(
-      "https://yellow-mart-backend.onrender.com/api/auth/forgot-password",
+      "https://yellow-mart-backend.onrender.com/api/auth/reset-password",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: username.value.trim(),
-          email: email.value
+          token: token.value,
+          password: password.value
         })
       }
     )
@@ -96,14 +111,13 @@ const send = async () => {
 
     if (!res.ok) {
       messageType.value = "error"
-      message.value = data.message || "Could not send reset link"
-      error(data.message || "Could not send reset link")
+      message.value = data.message || "Could not reset password"
+      error(data.message || "Could not reset password")
       return
     }
 
-    messageType.value = "success"
-    message.value = data.message || "Reset link sent to " + email.value
-    success(data.message || "Reset link sent to " + email.value)
+    success(data.message || "Password reset successfully. You can now log in.")
+    await navigateTo("/login")
   } catch (err) {
     console.error(err)
     messageType.value = "error"
@@ -167,6 +181,13 @@ const send = async () => {
   color: var(--color-text-secondary);
   margin: 0;
   font-size: 0.9375rem;
+}
+
+.invalid-state {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  padding: 0.75rem 0;
 }
 
 .field-label {

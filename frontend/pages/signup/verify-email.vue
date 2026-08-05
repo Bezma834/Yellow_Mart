@@ -14,19 +14,35 @@
 
       <p v-if="message" :class="['msg', messageType]">{{ message }}</p>
 
-      <label class="field-label" for="code">Verification Code</label>
-      <input
-        id="code"
-        v-model="code"
-        placeholder="Enter verification code"
-      />
+      <template v-if="email">
+        <label class="field-label" for="code">Verification Code</label>
+        <input
+          id="code"
+          v-model="code"
+          inputmode="numeric"
+          maxlength="6"
+          placeholder="6-digit code"
+        />
 
-      <button
-        class="submit-btn"
-        @click="verifyEmail"
-      >
-        Verify Email
-      </button>
+        <button
+          class="submit-btn"
+          :disabled="loading"
+          @click="verifyEmail"
+        >
+          {{ loading ? "Verifying..." : "Verify Email" }}
+        </button>
+
+        <p class="hint">
+          We sent a 6-digit code to <strong>{{ email }}</strong>. It expires in 10 minutes.
+        </p>
+      </template>
+
+      <div v-else class="no-email">
+        <p>We couldn't find the email you signed up with.</p>
+        <NuxtLink to="/signup" class="link">
+          Go back to Signup
+        </NuxtLink>
+      </div>
 
       <NuxtLink to="/signup" class="link">
         Back to Signup
@@ -36,26 +52,71 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref, computed } from "vue"
+import { useRoute } from "vue-router"
+import { useToast } from "~/composables/useToast"
+
+const { success, error } = useToast()
+const route = useRoute()
+
+const email = computed(() => {
+  const fromQuery = route.query.email
+  if (fromQuery && typeof fromQuery === "string") return fromQuery
+  if (import.meta.client) {
+    return localStorage.getItem("pendingEmail") || ""
+  }
+  return ""
+})
 
 const code = ref("")
 const message = ref("")
 const messageType = ref("success")
+const loading = ref(false)
 
-const verifyEmail = () => {
+const verifyEmail = async () => {
   if (!code.value) {
     messageType.value = "error"
-    message.value = "Please enter verification code"
+    message.value = "Please enter the verification code"
     return
   }
 
-  // demo flow: code "1234" verifies
-  if (code.value === "1234") {
+  loading.value = true
+  message.value = ""
+
+  try {
+    const res = await fetch(
+      "https://yellow-mart-backend.onrender.com/api/auth/verify-email",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.value,
+          code: code.value
+        })
+      }
+    )
+
+    const data = await res.json().catch(() => ({ message: "Server error. Please try again." }))
+
+    if (!res.ok) {
+      messageType.value = "error"
+      message.value = data.message || "Verification failed"
+      error(data.message || "Verification failed")
+      return
+    }
+
     messageType.value = "success"
-    message.value = "Email verified successfully!"
-  } else {
+    message.value = data.message || "Email verified successfully!"
+    success("Email verified successfully! You can now log in.")
+    localStorage.removeItem("pendingEmail")
+    await navigateTo("/login")
+  } catch (err) {
+    console.error(err)
     messageType.value = "error"
-    message.value = "Invalid verification code"
+    message.value = "Cannot connect to server. Please try again."
+    error("Cannot connect to server. Please try again.")
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -196,6 +257,20 @@ input::placeholder {
 
 .link:hover {
   text-decoration: underline;
+}
+
+.hint {
+  margin-top: 1rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.no-email {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
 }
 </style>
 

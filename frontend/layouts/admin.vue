@@ -112,6 +112,8 @@ definePageMeta({
 
   </div>
 
+  <AppToast />
+
 
 
   <!-- Logout Confirm Modal -->
