@@ -258,6 +258,7 @@ onMounted(async () => {
   line-height: 1.1;
   margin-bottom: 1.25rem;
   font-family: var(--font-heading);
+  color: #ffffff;
   animation: heroFadeIn 1s 0.3s both;
 }
 
@@ -567,6 +568,31 @@ onMounted(async () => {
     rgba(11, 17, 33, 0.5) 60%,
     rgba(11, 17, 33, 0.85) 100%
   );
+}
+
+:root.dark .hero-search {
+  background: rgba(19, 28, 49, 0.92);
+  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+:root.dark .hero-search:focus-within {
+  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(245, 158, 11, 0.4);
+}
+
+:root.dark .hero-search input {
+  color: var(--color-text-primary);
+}
+
+:root.dark .hero-search input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+:root.dark .search-icon {
+  color: var(--color-text-tertiary);
+}
+
+:root.dark .hero-search button {
+  color: var(--color-text-inverse);
 }
 
 :root.dark .hero-suggestions {

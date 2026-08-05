@@ -487,6 +487,13 @@ onMounted(() => {
   color: var(--color-text-primary);
 }
 
+:root.dark .filters button.active {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  border-color: transparent;
+  color: var(--color-text-inverse);
+  box-shadow: 0 4px 16px -4px var(--color-primary-glow);
+}
+
 :root.dark .loader {
   border-color: var(--color-dark-border);
   border-top-color: var(--color-primary);
