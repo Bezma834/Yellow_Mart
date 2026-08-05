@@ -2,23 +2,6 @@
   <footer class="footer">
     <div class="footer-glow"></div>
     <div class="container">
-      <!-- NEWSLETTER STRIP -->
-      <div class="newsletter">
-        <div class="newsletter-text">
-          <h3>Stay in the loop</h3>
-          <p>Get the latest businesses and offers delivered to your inbox.</p>
-        </div>
-        <form class="newsletter-form" @submit.prevent="subscribe">
-          <input
-            v-model="email"
-            type="email"
-            placeholder="Enter your email address"
-            required
-          />
-          <button type="submit" class="newsletter-btn">Subscribe</button>
-        </form>
-      </div>
-
       <div class="footer-grid">
         <!-- BRAND -->
         <div class="footer-brand">
@@ -122,22 +105,6 @@
   </footer>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue"
-
-const email = ref("")
-const subscribed = ref(false)
-
-const subscribe = () => {
-  if (!email.value) return
-  subscribed.value = true
-  email.value = ""
-  setTimeout(() => {
-    subscribed.value = false
-  }, 3000)
-}
-</script>
-
 <style scoped>
 .footer {
   position: relative;
@@ -174,84 +141,6 @@ const subscribe = () => {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 1.5rem;
-}
-
-/* Newsletter */
-.newsletter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  margin: 0 auto;
-  padding: 3rem 0 2.5rem;
-  max-width: 1000px;
-}
-
-.newsletter-text h3 {
-  font-size: 1.375rem;
-  font-weight: 700;
-  color: white;
-  margin: 0 0 0.375rem 0;
-  font-family: var(--font-heading);
-}
-
-.newsletter-text p {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.5);
-  margin: 0;
-}
-
-.newsletter-form {
-  display: flex;
-  gap: 0.625rem;
-  min-width: 0;
-  flex: 1;
-  max-width: 440px;
-}
-
-.newsletter-form input {
-  flex: 1;
-  min-width: 0;
-  padding: 0.75rem 1.125rem;
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: white;
-  font-size: 0.875rem;
-  outline: none;
-  transition: all var(--transition-fast);
-}
-
-.newsletter-form input::placeholder {
-  color: rgba(255, 255, 255, 0.35);
-}
-
-.newsletter-form input:focus {
-  border-color: var(--color-primary);
-  background: rgba(255, 255, 255, 0.09);
-}
-
-.newsletter-btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-  color: var(--color-text-primary);
-  font-weight: 700;
-  font-size: 0.875rem;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all var(--transition-base);
-}
-
-.newsletter-btn:hover {
-  box-shadow: 0 0 20px var(--color-primary-glow);
-  transform: translateY(-1px);
-}
-
-.newsletter-btn:disabled {
-  opacity: 0.6;
-  cursor: default;
 }
 
 .footer-grid {
@@ -405,31 +294,10 @@ const subscribe = () => {
   }
 }
 
-@media (max-width: 768px) {
-  .newsletter {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.25rem;
-  }
-
-  .newsletter-form {
-    width: 100%;
-    max-width: none;
-  }
-}
-
 @media (max-width: 640px) {
   .footer-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
-  }
-
-  .newsletter-form {
-    flex-direction: column;
-  }
-
-  .newsletter-btn {
-    width: 100%;
   }
 
   .copyright {

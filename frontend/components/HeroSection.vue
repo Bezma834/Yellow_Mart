@@ -156,7 +156,7 @@ watch(searchQuery, (val) => {
 
 const goToBusiness = (id: string) => {
   showSuggestions.value = false
-  router.push(`/business/${id}`)
+  router.push(`/market/${id}`)
 }
 
 onMounted(async () => {
@@ -252,7 +252,7 @@ onMounted(async () => {
 
 /* Title */
 .hero-title {
-  font-size: 4rem;
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 800;
   letter-spacing: -0.025em;
   line-height: 1.1;
@@ -501,10 +501,6 @@ onMounted(async () => {
 
 /* Mobile */
 @media (max-width: 768px) {
-  .hero-title {
-    font-size: 2.5rem;
-  }
-
   .hero-subtitle {
     font-size: 1rem;
   }
