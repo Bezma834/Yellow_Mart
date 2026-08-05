@@ -497,7 +497,7 @@ loadBusinesses()
 }
 
 .header h1{
-  font-size:38px;
+  font-size:36px;
   font-weight:800;
   color:var(--color-text-primary);
   margin:0;
@@ -557,6 +557,7 @@ loadBusinesses()
   border-radius:24px;
   padding:24px;
   text-align:center;
+  border:1px solid var(--color-border-light);
   box-shadow:0 12px 30px rgba(15,23,42,.08);
   transition:.3s;
 }
@@ -564,6 +565,7 @@ loadBusinesses()
 .business-wrapper:hover{
   transform:translateY(-8px);
   box-shadow:0 20px 45px rgba(15,23,42,.15);
+  border-color:var(--color-border-hover);
 }
 
 /* ================= IMAGE ================= */
@@ -575,7 +577,7 @@ loadBusinesses()
   margin:0 auto 20px;
   object-fit:cover;
   border-radius:18px;
-  border:4px solid white;
+  border:4px solid var(--color-surface);
   box-shadow:0 8px 25px rgba(0,0,0,.15);
 }
 
@@ -587,7 +589,7 @@ loadBusinesses()
 }
 
 .business-wrapper p{
-  color:#6b7280;
+  color:var(--color-text-secondary);
   line-height:1.6;
   margin-bottom:20px;
 }
@@ -612,8 +614,8 @@ loadBusinesses()
 }
 
 .edit-btn{
-  background:#2563eb;
-  color:white;
+  background:var(--color-primary);
+  color:var(--color-text-primary);
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -621,8 +623,9 @@ loadBusinesses()
 }
 
 .edit-btn:hover{
-  background:#1d4ed8;
+  background:var(--color-primary-hover);
   transform:translateY(-2px);
+  box-shadow:var(--shadow-md);
 }
 
 .delete-btn{
@@ -637,6 +640,7 @@ loadBusinesses()
 .delete-btn:hover{
   background:#dc2626;
   transform:translateY(-2px);
+  box-shadow:var(--shadow-md);
 }
 
 /* ================= LOADING ================= */
@@ -656,6 +660,7 @@ loadBusinesses()
   border-radius:28px;
   padding:60px;
   text-align:center;
+  border:1px solid var(--color-border-light);
   box-shadow:0 15px 35px rgba(0,0,0,.08);
 }
 
@@ -668,18 +673,18 @@ loadBusinesses()
   justify-content:center;
   border-radius:50%;
   background:var(--color-primary-light);
-  color:var(--color-primary);
+  color:var(--color-primary-hover);
 }
 
 .empty-state h2{
-  font-size:32px;
+  font-size:30px;
   margin-bottom:15px;
   color:var(--color-text-primary);
 }
 
 .empty-state p{
-  font-size:18px;
-  color:#6b7280;
+  font-size:17px;
+  color:var(--color-text-secondary);
   margin-bottom:30px;
 }
 
@@ -689,27 +694,36 @@ loadBusinesses()
   position:fixed;
   inset:0;
   background:rgba(0,0,0,.55);
+  backdrop-filter:blur(4px);
   display:flex;
   justify-content:center;
   align-items:center;
   z-index:9999;
+  padding:20px;
 }
 
 .modal{
   background:var(--color-surface);
   width:380px;
+  max-width:100%;
   border-radius:24px;
   padding:30px;
   text-align:center;
+  border:1px solid var(--color-border-light);
   box-shadow:0 20px 50px rgba(0,0,0,.25);
 }
 
 .modal h2{
   margin-bottom:15px;
+  color:var(--color-text-primary);
 }
 
 .modal p{
-  color:var(--color-text-tertiary);
+  color:var(--color-text-secondary);
+}
+
+.modal p strong{
+  color:var(--color-text-primary);
 }
 
 .modal-actions{
@@ -726,10 +740,16 @@ loadBusinesses()
   border-radius:12px;
   cursor:pointer;
   font-weight:700;
+  transition:.2s;
 }
 
 .cancel{
   background:#e5e7eb;
+  color:var(--color-text-primary);
+}
+
+.cancel:hover{
+  background:#d1d5db;
 }
 
 .confirm{
@@ -795,9 +815,27 @@ loadBusinesses()
 :root.dark .modal {
   background: var(--color-dark-bg-secondary);
 }
+:root.dark .modal h2 {
+  color: var(--color-text-primary);
+}
+:root.dark .modal p strong {
+  color: var(--color-text-primary);
+}
+:root.dark .business-image {
+  border-color: var(--color-dark-bg-secondary);
+}
+:root.dark .edit-btn {
+  color: var(--color-text-primary);
+}
 :root.dark .cancel {
   background: var(--color-dark-bg);
   color: var(--color-text-primary);
+}
+:root.dark .cancel:hover {
+  background: var(--color-dark-bg-tertiary);
+}
+:root.dark .actions button:hover {
+  box-shadow: none;
 }
 </style>
 

@@ -124,7 +124,7 @@
 
             <div class="dropdown-divider"></div>
 
-            <button class="dropdown-item logout" @click="logoutUser">
+            <button class="dropdown-item logout" @click="requestLogout">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                 <polyline points="16 17 21 12 16 7"/>
@@ -209,7 +209,7 @@
             </svg>
             Login
           </NuxtLink>
-          <button v-if="user" class="mobile-link logout" @click="logoutUser()">
+          <button v-if="user" class="mobile-link logout" @click="requestLogout()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
               <polyline points="16 17 21 12 16 7"/>
@@ -239,6 +239,35 @@
       </div>
     </Transition>
   </nav>
+
+  <!-- LOGOUT CONFIRM MODAL -->
+  <Transition name="fade">
+    <div
+      v-if="showLogoutModal"
+      class="logout-overlay"
+      @click.self="cancelLogout"
+    >
+      <div class="logout-modal">
+        <div class="logout-modal-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </div>
+        <h3>Log out?</h3>
+        <p>Are you sure you want to log out of your account?</p>
+        <div class="logout-modal-actions">
+          <button class="logout-modal-cancel" @click="cancelLogout">
+            Cancel
+          </button>
+          <button class="logout-modal-confirm" @click="confirmLogout">
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -255,10 +284,22 @@ const searchQuery = ref("")
 const open = ref(false)
 const scrolled = ref(false)
 const mobileOpen = ref(false)
+const showLogoutModal = ref(false)
 
-const logoutUser = () => {
+const requestLogout = () => {
+  open.value = false
+  mobileOpen.value = false
+  showLogoutModal.value = true
+}
+
+const confirmLogout = () => {
+  showLogoutModal.value = false
   logout()
   router.push("/")
+}
+
+const cancelLogout = () => {
+  showLogoutModal.value = false
 }
 
 const handleScroll = () => {
@@ -851,6 +892,103 @@ onUnmounted(() => {
     display: none;
   }
 }
+
+/* Logout confirm modal */
+.logout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.logout-modal {
+  background: var(--color-surface);
+  border-radius: var(--radius-2xl);
+  padding: 36px 32px;
+  width: 400px;
+  max-width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-2xl);
+  animation: popIn 0.25s ease;
+}
+
+.logout-modal-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-modal h3 {
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  color: var(--color-text-primary);
+}
+
+.logout-modal p {
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  margin-bottom: 26px;
+}
+
+.logout-modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.logout-modal-cancel,
+.logout-modal-confirm {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-family: inherit;
+}
+
+.logout-modal-cancel {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+}
+
+.logout-modal-cancel:hover {
+  background: var(--color-border);
+}
+
+.logout-modal-confirm {
+  background: #111827;
+  color: white;
+}
+
+.logout-modal-confirm:hover {
+  background: #dc2626;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
 </style>
 
 <style>
@@ -1022,5 +1160,36 @@ onUnmounted(() => {
 :root.dark .mobile-theme:hover {
   background: var(--color-dark-bg-tertiary);
   color: var(--color-text-primary);
+}
+
+:root.dark .logout-modal {
+  background: var(--color-dark-surface);
+}
+
+:root.dark .logout-modal h3 {
+  color: var(--color-text-primary);
+}
+
+:root.dark .logout-modal p {
+  color: var(--color-text-secondary);
+}
+
+:root.dark .logout-modal-cancel {
+  background: var(--color-dark-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+:root.dark .logout-modal-cancel:hover {
+  background: var(--color-dark-border);
+}
+
+:root.dark .logout-modal-confirm {
+  background: var(--color-dark-surface-hover);
+  color: var(--color-text-primary);
+}
+
+:root.dark .logout-modal-confirm:hover {
+  background: #dc2626;
+  color: white;
 }
 </style>
