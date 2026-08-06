@@ -28,7 +28,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       hasuraUrl: "https://inviting-moray-87.hasura.app/v1/graphql",
-      hasuraSecret: ""
+      hasuraSecret: "",
+      googleClientId: ""
     }
   }
 
