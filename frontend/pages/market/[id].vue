@@ -139,10 +139,7 @@ onMounted(async () => {
     <div v-else class="details">
       <!-- HERO IMAGE -->
       <div class="hero-image">
-        <img
-          :src="business.image || '/default-business.jpg'"
-          :alt="business.name"
-        />
+        <BusinessImage :business="business" :alt="business.name" />
         <div class="hero-overlay"></div>
 
         <button
@@ -288,11 +285,29 @@ onMounted(async () => {
   box-shadow: var(--shadow-elevated);
 }
 
-.hero-image img {
+.hero-image :deep(img) {
   width: 100%;
   height: 420px;
   object-fit: cover;
   display: block;
+}
+
+.hero-image :deep(.business-avatar) {
+  height: 420px;
+}
+
+@media (max-width: 768px) {
+  .hero-image :deep(img),
+  .hero-image :deep(.business-avatar) {
+    height: 300px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-image :deep(img),
+  .hero-image :deep(.business-avatar) {
+    height: 240px;
+  }
 }
 
 .hero-overlay {
@@ -495,19 +510,11 @@ onMounted(async () => {
   .side-col {
     position: static;
   }
-
-  .hero-image img {
-    height: 300px;
-  }
 }
 
 @media (max-width: 640px) {
   .page {
     padding: 5.5rem 1rem 3rem;
-  }
-
-  .hero-image img {
-    height: 240px;
   }
 
   .card {

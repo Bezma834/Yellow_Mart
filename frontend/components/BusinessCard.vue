@@ -25,15 +25,7 @@ const truncateText = (text: string, length: number) => {
   <div class="business-card">
     <NuxtLink :to="`/market/${business.id}`" class="card-link">
       <div class="image-wrapper">
-        <img
-          :src="
-            business.image_url ||
-            business.image ||
-            'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600'
-          "
-          :alt="business.name"
-          loading="lazy"
-        />
+        <BusinessImage :business="business" :alt="business.name" />
         <div class="image-overlay"></div>
         <span class="category-badge">{{ categoryName }}</span>
       </div>
@@ -97,14 +89,14 @@ const truncateText = (text: string, length: number) => {
   background: var(--color-bg-tertiary);
 }
 
-.image-wrapper img {
+.image-wrapper :deep(img) {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.business-card:hover .image-wrapper img {
+.business-card:hover .image-wrapper :deep(img) {
   transform: scale(1.08);
 }
 

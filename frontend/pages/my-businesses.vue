@@ -25,8 +25,6 @@ const selectedBusiness = ref<any>(null)
 
 const deleting = ref(false)
 
-const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600"
-
 // Open delete modal
 const openDeleteModal = (business: any) => {
   selectedBusiness.value = business
@@ -133,8 +131,6 @@ const editBusiness = (id: string) => {
   router.push(`/edit-business/${id}`)
 }
 
-const imageSrc = (business: any) => business.image || business.image_url || DEFAULT_IMAGE
-
 const categoryName = (business: any) => {
   if (business.category && typeof business.category === "object") return business.category.name
   return business.category || "Business"
@@ -215,12 +211,7 @@ onMounted(() => {
     >
 
       <div class="image-wrapper">
-        <img
-          :src="imageSrc(business)"
-          :alt="business.name"
-          class="business-image"
-          loading="lazy"
-        />
+        <BusinessImage :business="business" :alt="business.name" />
         <span
           v-if="statusLabel(business.status)"
           class="status-badge"
@@ -458,13 +449,15 @@ onMounted(() => {
 .image-wrapper {
   position: relative;
   width: 220px;
+  height: 220px;
   margin: 0 auto 20px;
 }
 
-.business-image {
+.image-wrapper :deep(img),
+.image-wrapper :deep(.business-avatar) {
   display: block;
-  width: 220px;
-  height: 220px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   border-radius: 18px;
   border: 4px solid var(--color-surface);
@@ -803,12 +796,10 @@ onMounted(() => {
     text-align: center;
   }
 
-  .business-image,
   .image-wrapper {
     width: 180px;
     height: 180px;
   }
-
   .skeleton-img {
     width: 180px;
     height: 180px;
@@ -866,7 +857,8 @@ onMounted(() => {
 :root.dark .modal-icon {
   background: rgba(220, 38, 38, 0.15);
 }
-:root.dark .business-image {
+:root.dark .image-wrapper :deep(img),
+:root.dark .image-wrapper :deep(.business-avatar) {
   border-color: var(--color-dark-bg-secondary);
 }
 :root.dark .edit-btn {
