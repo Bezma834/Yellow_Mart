@@ -272,7 +272,7 @@ gap:20px;
 
 .card{
 
-background:white;
+background:var(--color-surface);
 
 padding:28px 20px;
 

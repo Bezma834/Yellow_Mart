@@ -321,7 +321,7 @@ gap:25px;
 
 .user-card{
 
-background:white;
+background:var(--color-surface);
 
 padding:25px;
 

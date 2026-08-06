@@ -5,15 +5,15 @@ import { useRouter } from "vue-router"
 import { gql } from "@apollo/client"
 
 import { useAuth } from "~/composables/useAuth"
-
+import { useToast } from "~/composables/useToast"
 
 const router = useRouter()
 
 const { user } = useAuth()
 
+const toast = useToast()
+
 const { $apollo } = useNuxtApp() as any
-
-
 
 const businesses = ref<any[]>([])
 
@@ -23,50 +23,28 @@ const showDeleteModal = ref(false)
 
 const selectedBusiness = ref<any>(null)
 
-const showSuccess = ref(false)
+const deleting = ref(false)
 
-
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=600"
 
 // Open delete modal
-
-const openDeleteModal = (business:any)=>{
-
-
-console.log(
-"SELECTED BUSINESS:",
-business
-)
-
-
-
-selectedBusiness.value = business
-
-
-showDeleteModal.value = true
-
-
+const openDeleteModal = (business: any) => {
+  selectedBusiness.value = business
+  showDeleteModal.value = true
 }
 
-
-
-
 // Get businesses owned by user
-
 const GET_MY_BUSINESSES = gql`
-
 query GetMyBusinesses(
   $owner_id: uuid!
 ){
-
 businesses(
 where:{
 owner_id:{
 _eq:$owner_id
 }
 }
-
 ){
-
 id
 name
 description
@@ -78,212 +56,103 @@ lat
 lng
 views
 likes
-
+status
 
 category{
-
 id
 name
-
 }
-
-
 }
-
 }
-
 `
 
-
-
-
 // Delete mutation
-
 const DELETE_BUSINESS = gql`
-
 mutation DeleteBusiness(
 $id:uuid!
 ){
-
 delete_businesses_by_pk(
 id:$id
 ){
-
 id
-
 }
-
 }
-
 `
 
-
-
-
 // Load businesses
+const loadBusinesses = async () => {
+  if (!user.value) {
+    router.push("/login")
+    return
+  }
 
-const loadBusinesses = async()=>{
+  try {
+    const result = await $apollo.query({
+      query: GET_MY_BUSINESSES,
+      variables: {
+        owner_id: user.value.id
+      },
+      fetchPolicy: "network-only"
+    })
 
-
-if(!user.value){
-
-router.push("/login")
-
-return
-
+    businesses.value = result.data.businesses || []
+  } catch (error) {
+    console.error("LOAD ERROR:", error)
+    toast.error("Failed to load your businesses")
+  } finally {
+    loading.value = false
+  }
 }
-
-
-
-try{
-
-
-const result = await $apollo.query({
-
-query:GET_MY_BUSINESSES,
-
-variables:{
-
-owner_id:user.value.id
-
-},
-
-fetchPolicy:"network-only"
-
-})
-
-
-console.log(
-"MY BUSINESSES:",
-result.data.businesses
-)
-
-
-businesses.value =
-result.data.businesses
-
-
-
-}
-catch(error){
-
-console.error(
-"LOAD ERROR:",
-error
-)
-
-}
-finally{
-
-loading.value=false
-
-}
-
-
-}
-
-
-
 
 // Delete business
+const deleteBusiness = async (id: string) => {
+  deleting.value = true
+  try {
+    await $apollo.mutate({
+      mutation: DELETE_BUSINESS,
+      variables: { id }
+    })
 
-const deleteBusiness = async(id:string)=>{
+    // remove from UI immediately
+    businesses.value = businesses.value.filter((item) => item.id !== id)
 
+    showDeleteModal.value = false
+    selectedBusiness.value = null
 
-console.log(
-"DELETING:",
-id
-)
-
-
-try{
-
-
-const result = await $apollo.mutate({
-
-mutation:DELETE_BUSINESS,
-
-variables:{
-id
+    toast.success("Business deleted successfully")
+  } catch (error) {
+    console.error("DELETE ERROR:", error)
+    toast.error("Failed to delete business")
+  } finally {
+    deleting.value = false
+  }
 }
-
-})
-
-
-console.log(
-"DELETE RESULT:",
-result
-)
-
-
-
-// remove from UI immediately
-
-businesses.value =
-businesses.value.filter(
-(item)=>item.id !== id
-)
-
-
-
-showDeleteModal.value=false
-
-
-selectedBusiness.value=null
-
-
-showSuccess.value=true
-
-
-
-setTimeout(()=>{
-
-showSuccess.value=false
-
-},2500)
-
-
-
-}
-catch(error){
-
-console.error(
-"DELETE ERROR:",
-error
-)
-
-}
-
-
-}
-
-
-
 
 // Edit page navigation
-
-const editBusiness = (id:string)=>{
-
-
-router.push(
-`/edit-business/${id}`
-)
-
-
+const editBusiness = (id: string) => {
+  router.push(`/edit-business/${id}`)
 }
 
+const imageSrc = (business: any) => business.image || business.image_url || DEFAULT_IMAGE
 
+const categoryName = (business: any) => {
+  if (business.category && typeof business.category === "object") return business.category.name
+  return business.category || "Business"
+}
 
+const statusLabel = (status: string) => {
+  if (!status) return null
+  const map: Record<string, string> = {
+    approved: "Approved",
+    pending: "Pending Review",
+    rejected: "Rejected"
+  }
+  return map[status] || status
+}
 
-
-onMounted(()=>{
-
-
-loadBusinesses()
-
-
+onMounted(() => {
+  loadBusinesses()
 })
-
 
 </script>
 
@@ -312,15 +181,26 @@ loadBusinesses()
 
   </div>
 
-
-  <!-- Loading -->
+  <!-- Loading skeletons -->
   <div
     v-if="loading"
-    class="loading"
+    class="grid"
   >
-    Loading businesses...
+    <div
+      v-for="i in 3"
+      :key="i"
+      class="business-wrapper skeleton-card"
+    >
+      <div class="skeleton skeleton-img"></div>
+      <div class="skeleton skeleton-line w-60"></div>
+      <div class="skeleton skeleton-line w-90"></div>
+      <div class="skeleton skeleton-line w-80"></div>
+      <div class="skeleton-actions">
+        <div class="skeleton skeleton-btn"></div>
+        <div class="skeleton skeleton-btn"></div>
+      </div>
+    </div>
   </div>
-
 
   <!-- Business List -->
   <div
@@ -334,18 +214,33 @@ loadBusinesses()
       class="business-wrapper"
     >
 
-      <img
-        :src="business.image"
-        class="business-image"
-      />
+      <div class="image-wrapper">
+        <img
+          :src="imageSrc(business)"
+          :alt="business.name"
+          class="business-image"
+          loading="lazy"
+        />
+        <span
+          v-if="statusLabel(business.status)"
+          class="status-badge"
+          :class="business.status"
+        >
+          {{ statusLabel(business.status) }}
+        </span>
+      </div>
 
       <h2>{{ business.name }}</h2>
 
-      <p>{{ business.description }}</p>
+      <p class="description">{{ business.description }}</p>
+
+      <span class="category-tag">
+        {{ categoryName(business) }}
+      </span>
 
       <div class="info">
 
-        <span>
+        <span v-if="business.city">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           {{ business.city }}
         </span>
@@ -386,7 +281,6 @@ loadBusinesses()
 
   </div>
 
-
   <!-- Empty State -->
   <div
     v-else
@@ -414,369 +308,514 @@ loadBusinesses()
 
   </div>
 
-
   <!-- Delete Modal -->
-  <div
-    v-if="showDeleteModal"
-    class="overlay"
-  >
+  <Teleport to="body">
+    <div
+      v-if="showDeleteModal"
+      class="overlay"
+      @click.self="showDeleteModal = false"
+    >
 
-    <div class="modal">
+      <div class="modal">
 
-      <h2>Delete Business?</h2>
+        <div class="modal-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </div>
 
-      <p>
-        Are you sure you want to delete
-        <strong>{{ selectedBusiness?.name }}</strong>?
-      </p>
+        <h2>Delete Business?</h2>
 
-      <div class="modal-actions">
+        <p>
+          Are you sure you want to delete
+          <strong>{{ selectedBusiness?.name }}</strong>?
+          This action cannot be undone.
+        </p>
 
-        <button
-          @click="showDeleteModal = false"
-          class="cancel"
-        >
-          Cancel
-        </button>
+        <div class="modal-actions">
 
-        <button
-          @click="deleteBusiness(selectedBusiness.id)"
-          class="confirm"
-        >
-          Delete
-        </button>
+          <button
+            @click="showDeleteModal = false"
+            class="cancel"
+            :disabled="deleting"
+          >
+            Cancel
+          </button>
+
+          <button
+            @click="deleteBusiness(selectedBusiness.id)"
+            class="confirm"
+            :disabled="deleting"
+          >
+            <span v-if="deleting" class="spinner"></span>
+            {{ deleting ? "Deleting..." : "Delete" }}
+          </button>
+
+        </div>
 
       </div>
 
     </div>
-
-  </div>
+  </Teleport>
 
 </div>
 
 </template>
 <style scoped>
 
-.info{
-  display:flex;
-  justify-content:center;
-  gap:18px;
-  margin:18px 0;
-  color:var(--color-text-tertiary);
-  font-size:14px;
-  font-weight:600;
-}
-
-.info span{
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-}
-
-.info svg{
-  color:var(--color-primary-hover);
-  flex-shrink:0;
-}
-
-.page{
-  min-height:100vh;
-  background:var(--color-bg-secondary);
-  padding:90px 30px 50px;
+.page {
+  min-height: 100vh;
+  background: var(--color-bg-secondary);
+  padding: 90px 30px 50px;
 }
 
 /* ================= HEADER ================= */
 
-.header{
-  max-width:1200px;
-  margin:0 auto 40px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:20px;
+.header {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
-.header h1{
-  font-size:36px;
-  font-weight:800;
-  color:var(--color-text-primary);
-  margin:0;
-  display:flex;
-  align-items:center;
-  gap:12px;
+.header h1 {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.title-icon{
-  color:var(--color-primary);
+.title-icon {
+  color: var(--color-primary);
 }
 
-.header p{
-  margin-top:8px;
-  color:var(--color-text-tertiary);
-  font-size:16px;
+.header p {
+  margin-top: 8px;
+  color: var(--color-text-tertiary);
+  font-size: 16px;
 }
 
 /* ================= ADD BUTTON ================= */
 
-.add-business-btn{
-  background:var(--color-primary);
-  color:var(--color-text-primary);
-  border:none;
-  padding:14px 26px;
-  border-radius:14px;
-  font-weight:700;
-  font-family:inherit;
-  cursor:pointer;
-  transition:.3s;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  box-shadow:0 4px 16px -4px var(--color-primary-glow);
+.add-business-btn {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+  border: none;
+  padding: 14px 26px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px -4px var(--color-primary-glow);
 }
 
-.add-business-btn:hover{
-  background:var(--color-primary-hover);
-  transform:translateY(-3px);
-  box-shadow:0 8px 24px -4px var(--color-primary-glow);
+.add-business-btn:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px -4px var(--color-primary-glow);
 }
 
 /* ================= GRID ================= */
 
-.grid{
-  max-width:1200px;
-  margin:auto;
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(330px,1fr));
-  gap:28px;
+.grid {
+  max-width: 1200px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 28px;
 }
 
 /* ================= CARD ================= */
 
-.business-wrapper{
-  background:var(--color-surface);
-  border-radius:24px;
-  padding:24px;
-  text-align:center;
-  border:1px solid var(--color-border-light);
-  box-shadow:0 12px 30px rgba(15,23,42,.08);
-  transition:.3s;
+.business-wrapper {
+  background: var(--color-surface);
+  border-radius: 24px;
+  padding: 24px;
+  text-align: center;
+  border: 1px solid var(--color-border-light);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
 }
 
-.business-wrapper:hover{
-  transform:translateY(-8px);
-  box-shadow:0 20px 45px rgba(15,23,42,.15);
-  border-color:var(--color-border-hover);
+.business-wrapper:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
+  border-color: var(--color-border-hover);
 }
 
 /* ================= IMAGE ================= */
 
-.business-image{
-  display:block;
-  width:220px;
-  height:220px;
-  margin:0 auto 20px;
-  object-fit:cover;
-  border-radius:18px;
-  border:4px solid var(--color-surface);
-  box-shadow:0 8px 25px rgba(0,0,0,.15);
+.image-wrapper {
+  position: relative;
+  width: 220px;
+  margin: 0 auto 20px;
 }
 
-.business-wrapper h2{
-  font-size:22px;
-  font-weight:700;
-  color:var(--color-text-primary);
-  margin-bottom:8px;
+.business-image {
+  display: block;
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 18px;
+  border: 4px solid var(--color-surface);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.business-wrapper p{
-  color:var(--color-text-secondary);
-  line-height:1.6;
-  margin-bottom:20px;
+.status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: white;
+}
+
+.status-badge.approved {
+  background: #22c55e;
+}
+
+.status-badge.pending {
+  background: var(--color-primary);
+}
+
+.status-badge.rejected {
+  background: #dc2626;
+}
+
+.business-wrapper h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.business-wrapper p.description {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 12px;
+  flex-grow: 1;
+}
+
+.category-tag {
+  display: inline-block;
+  margin: 0 auto 4px;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+}
+
+/* ================= INFO ================= */
+
+.info {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin: 14px 0;
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.info span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.info svg {
+  color: var(--color-primary-hover);
+  flex-shrink: 0;
 }
 
 /* ================= BUTTONS ================= */
 
-.actions{
-  display:flex;
-  gap:12px;
-  margin-top:20px;
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
 }
 
-.actions button{
-  flex:1;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-  font-weight:700;
-  font-size:15px;
-  transition:.25s;
+.actions button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  transition: 0.25s;
 }
 
-.edit-btn{
-  background:var(--color-primary);
-  color:var(--color-text-primary);
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
+.edit-btn {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 
-.edit-btn:hover{
-  background:var(--color-primary-hover);
-  transform:translateY(-2px);
-  box-shadow:var(--shadow-md);
+.edit-btn:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
-.delete-btn{
-  background:#ef4444;
-  color:white;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 
-.delete-btn:hover{
-  background:#dc2626;
-  transform:translateY(-2px);
-  box-shadow:var(--shadow-md);
+.delete-btn:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
-/* ================= LOADING ================= */
+/* ================= SKELETONS ================= */
 
-.loading{
-  text-align:center;
-  font-size:22px;
-  color:var(--color-text-tertiary);
+.skeleton-card {
+  min-height: 420px;
+  gap: 14px;
+}
+
+.skeleton {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-img {
+  width: 220px;
+  height: 220px;
+  border-radius: 18px;
+  margin: 0 auto;
+}
+
+.skeleton-line {
+  height: 14px;
+}
+
+.w-60 { width: 60%; margin: 0 auto; }
+.w-90 { width: 90%; margin: 0 auto; }
+.w-80 { width: 80%; margin: 0 auto; }
+
+.skeleton-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.skeleton-btn {
+  flex: 1;
+  height: 46px;
+  border-radius: 12px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
 }
 
 /* ================= EMPTY STATE ================= */
 
-.empty-state{
-  max-width:700px;
-  margin:80px auto;
-  background:var(--color-surface);
-  border-radius:28px;
-  padding:60px;
-  text-align:center;
-  border:1px solid var(--color-border-light);
-  box-shadow:0 15px 35px rgba(0,0,0,.08);
+.empty-state {
+  max-width: 700px;
+  margin: 80px auto;
+  background: var(--color-surface);
+  border-radius: 28px;
+  padding: 60px;
+  text-align: center;
+  border: 1px solid var(--color-border-light);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
-.empty-icon{
-  width:110px;
-  height:110px;
-  margin:0 auto 20px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:50%;
-  background:var(--color-primary-light);
-  color:var(--color-primary-hover);
+.empty-icon {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary-hover);
 }
 
-.empty-state h2{
-  font-size:30px;
-  margin-bottom:15px;
-  color:var(--color-text-primary);
+.empty-state h2 {
+  font-size: 30px;
+  margin-bottom: 15px;
+  color: var(--color-text-primary);
 }
 
-.empty-state p{
-  font-size:17px;
-  color:var(--color-text-secondary);
-  margin-bottom:30px;
+.empty-state p {
+  font-size: 17px;
+  color: var(--color-text-secondary);
+  margin-bottom: 30px;
 }
 
 /* ================= DELETE MODAL ================= */
 
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.55);
-  backdrop-filter:blur(4px);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:9999;
-  padding:20px;
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
 }
 
-.modal{
-  background:var(--color-surface);
-  width:380px;
-  max-width:100%;
-  border-radius:24px;
-  padding:30px;
-  text-align:center;
-  border:1px solid var(--color-border-light);
-  box-shadow:0 20px 50px rgba(0,0,0,.25);
+.modal {
+  background: var(--color-surface);
+  width: 380px;
+  max-width: 100%;
+  border-radius: 24px;
+  padding: 30px;
+  text-align: center;
+  border: 1px solid var(--color-border-light);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.modal h2{
-  margin-bottom:15px;
-  color:var(--color-text-primary);
+.modal-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.modal p{
-  color:var(--color-text-secondary);
+.modal h2 {
+  margin-bottom: 15px;
+  color: var(--color-text-primary);
 }
 
-.modal p strong{
-  color:var(--color-text-primary);
+.modal p {
+  color: var(--color-text-secondary);
 }
 
-.modal-actions{
-  display:flex;
-  gap:15px;
-  margin-top:25px;
+.modal p strong {
+  color: var(--color-text-primary);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
 }
 
 .cancel,
-.confirm{
-  flex:1;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-  font-weight:700;
-  transition:.2s;
+.confirm {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.2s;
 }
 
-.cancel{
-  background:#e5e7eb;
-  color:var(--color-text-primary);
+.cancel,
+.confirm:disabled {
+  cursor: not-allowed;
 }
 
-.cancel:hover{
-  background:#d1d5db;
+.cancel {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
 }
 
-.confirm{
-  background:#ef4444;
-  color:white;
+.cancel:hover {
+  background: var(--color-border-hover);
 }
 
-.confirm:hover{
-  background:#dc2626;
+.confirm {
+  background: #ef4444;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.confirm:hover {
+  background: #dc2626;
+}
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* ================= RESPONSIVE ================= */
 
-@media (max-width:768px){
+@media (max-width: 768px) {
 
-  .header{
-    flex-direction:column;
-    text-align:center;
+  .header {
+    flex-direction: column;
+    text-align: center;
   }
 
-  .business-image{
-    width:180px;
-    height:180px;
+  .business-image,
+  .image-wrapper {
+    width: 180px;
+    height: 180px;
   }
 
-  .actions{
-    flex-direction:column;
+  .skeleton-img {
+    width: 180px;
+    height: 180px;
+  }
+
+  .actions {
+    flex-direction: column;
   }
 
 }
@@ -801,13 +840,16 @@ loadBusinesses()
 }
 :root.dark .header p,
 :root.dark .info,
-:root.dark .loading,
 :root.dark .modal p {
   color: var(--color-text-secondary);
 }
-:root.dark .business-wrapper p,
+:root.dark .business-wrapper p.description,
 :root.dark .empty-state p {
   color: var(--color-text-tertiary);
+}
+:root.dark .category-tag {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
 }
 :root.dark .empty-state {
   background: var(--color-dark-bg-secondary);
@@ -820,6 +862,9 @@ loadBusinesses()
 }
 :root.dark .modal p strong {
   color: var(--color-text-primary);
+}
+:root.dark .modal-icon {
+  background: rgba(220, 38, 38, 0.15);
 }
 :root.dark .business-image {
   border-color: var(--color-dark-bg-secondary);
@@ -834,8 +879,10 @@ loadBusinesses()
 :root.dark .cancel:hover {
   background: var(--color-dark-bg-tertiary);
 }
+:root.dark .skeleton {
+  background: var(--color-dark-bg-tertiary);
+}
 :root.dark .actions button:hover {
   box-shadow: none;
 }
 </style>
-

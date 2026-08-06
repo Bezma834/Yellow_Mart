@@ -313,27 +313,32 @@ onMounted(async () => {
 
 :root.dark .see-all-btn {
   color: var(--color-primary);
-  border-color: var(--color-dark-border);
+  border-color: var(--color-primary);
+  background: rgba(245, 158, 11, 0.08);
 }
 
 :root.dark .see-all-btn:hover {
-  background: var(--color-dark-bg-secondary);
-  border-color: var(--color-dark-border-hover);
+  background: rgba(245, 158, 11, 0.18);
+  border-color: var(--color-primary-hover);
 }
 
 :root.dark .tabs {
-  background: var(--color-dark-bg-secondary);
+  background: var(--color-dark-bg-tertiary);
 }
 
 :root.dark .tab {
-  color: var(--color-text-secondary);
+  color: #cbd5e1;
 }
 
 :root.dark .tab:hover {
   background: var(--color-dark-surface);
+  color: #f1f5f9;
 }
 
 :root.dark .tab.active {
-  background: var(--color-dark-surface);
+  background: var(--color-primary);
+  color: var(--color-dark-bg);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+  font-weight: 700;
 }
 </style>
