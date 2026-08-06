@@ -101,7 +101,7 @@ import { useRouter } from "vue-router"
 import { useAuth } from "~/composables/useAuth"
 
 const router = useRouter()
-const { login: authLogin, applyAuth, loading: authLoading } = useAuth()
+const { login: authLogin, googleLogin: authGoogleLogin, loading: authLoading } = useAuth()
 
 const identifier = ref("")
 const password = ref("")
@@ -173,47 +173,19 @@ const googleLogin = async (response: any) => {
 
   if (loading.value) return
 
-  loading.value = true
-
   try {
 
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
+    const res = await authGoogleLogin(response.credential)
 
-    const res = await fetch(
-      "https://yellow-mart-backend.onrender.com/api/auth/google",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: response.credential
-        }),
-        signal: controller.signal
-      }
-    )
-
-    clearTimeout(timeout)
-
-    const data = await res.json()
-
-    if (!res.ok) {
-      error.value = data.message || "Google login failed"
-      return
-    }
-
-    applyAuth(data.token, data.user)
-
-    if (data.user?.role?.trim() === "admin") {
+    if (res?.user?.role?.trim() === "admin") {
       router.push("/admin")
     } else {
       router.push("/")
     }
 
-  } catch (err) {
+  } catch (err: any) {
     console.error("GOOGLE LOGIN ERROR:", err)
-    error.value = "Google login failed. Please try again."
-  } finally {
-    loading.value = false
+    error.value = err.message || "Google login failed. Please try again."
   }
 
 }

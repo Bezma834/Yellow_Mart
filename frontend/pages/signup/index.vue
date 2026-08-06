@@ -146,8 +146,10 @@
 import { ref, computed } from "vue"
 import { useRouter } from "vue-router"
 import { useToast } from "~/composables/useToast"
+import { useAuth } from "~/composables/useAuth"
 const router = useRouter()
 const { success, error } = useToast()
+const { googleLogin: authGoogleLogin } = useAuth()
 
 const username = ref("")
 const fullName = ref("")
@@ -340,36 +342,17 @@ const googleLogin = async (response: any) => {
 
   try {
 
-    const res = await fetch(
-      "https://yellow-mart-backend.onrender.com/api/auth/google",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: response.credential
-        })
-      }
-    )
+    const res = await authGoogleLogin(response.credential)
 
-    const data = await res.json().catch(() => ({ message: "Google login failed" }))
-
-    if (!res.ok) {
-      errorMsg.value = data.message || "Google login failed"
-      return
-    }
-
-    localStorage.setItem("token", data.token)
-    localStorage.setItem("user", JSON.stringify(data.user))
-
-    if (data.user?.role?.trim() === "admin") {
+    if (res?.user?.role?.trim() === "admin") {
       router.push("/admin")
     } else {
       router.push("/")
     }
 
-  } catch (err) {
+  } catch (err: any) {
     console.error(err)
-    errorMsg.value = "Google login failed"
+    errorMsg.value = err.message || "Google login failed"
   } finally {
     loading.value = false
   }

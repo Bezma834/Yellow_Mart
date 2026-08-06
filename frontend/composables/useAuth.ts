@@ -1,4 +1,5 @@
 import { useState } from "#app"
+import { gql } from "@apollo/client"
 
 interface User {
   id: string
@@ -9,6 +10,61 @@ interface User {
   role?: string
   phone?: string | null
   bio?: string | null
+}
+
+const LOGIN_MUTATION = gql`
+mutation Login($email: String!, $password: String!) {
+  login(email: $email, password: $password) {
+    token
+    user {
+      id
+      username
+      fullname
+      email
+      avatar
+      phone
+      bio
+      role
+    }
+  }
+}
+`
+
+const GOOGLE_LOGIN_MUTATION = gql`
+mutation GoogleLogin($token: String!) {
+  google_login(token: $token) {
+    token
+    user {
+      id
+      username
+      fullname
+      email
+      avatar
+      phone
+      bio
+      role
+    }
+  }
+}
+`
+
+const extractError = (err: any) => {
+  const combinedErrors = err?.errors
+  if (Array.isArray(combinedErrors) && combinedErrors[0]?.message) {
+    return combinedErrors[0].message
+  }
+  const gqlMessage = err?.graphQLErrors?.[0]?.message
+  if (gqlMessage) return gqlMessage
+  if (err?.networkError?.result?.errors?.[0]?.message) {
+    return err.networkError.result.errors[0].message
+  }
+  if (err?.networkError?.message) {
+    return "Network error. Please try again."
+  }
+  if (err?.message && err.message !== "Login failed") {
+    return err.message
+  }
+  return "Login failed"
 }
 
 export const useAuth = () => {
@@ -42,7 +98,7 @@ export const useAuth = () => {
     }
   }
 
-  // Login function
+  // Login function (calls the Hasura login action)
   const login = async (identifier: string, password: string) => {
     if (loginInFlight) {
       return
@@ -52,29 +108,55 @@ export const useAuth = () => {
     loading.value = true
 
     try {
-      const res = await $fetch<{
-        token: string
-        user: User
-      }>(
-        "https://yellow-mart-backend.onrender.com/api/auth/login",
-        {
-          method: "POST",
-          body: {
-            email: identifier,
-            password
-          },
-          timeout: 30000
+      const { $apollo } = useNuxtApp() as any
+
+      const res = await $apollo.mutate({
+        mutation: LOGIN_MUTATION,
+        variables: {
+          email: identifier,
+          password
         }
-      )
+      })
 
-      applyAuth(res.token, res.user)
+      const data = res.data.login
 
-      return res
+      applyAuth(data.token, data.user)
+
+      return data
     } catch (err: any) {
-      throw new Error(
-        err.data?.message ||
-        "Login failed"
-      )
+      throw new Error(extractError(err))
+    } finally {
+      loading.value = false
+      loginInFlight = false
+    }
+  }
+
+  // Google login function (calls the Hasura google_login action)
+  const googleLogin = async (googleToken: string) => {
+    if (loginInFlight) {
+      return
+    }
+
+    loginInFlight = true
+    loading.value = true
+
+    try {
+      const { $apollo } = useNuxtApp() as any
+
+      const res = await $apollo.mutate({
+        mutation: GOOGLE_LOGIN_MUTATION,
+        variables: {
+          token: googleToken
+        }
+      })
+
+      const data = res.data.google_login
+
+      applyAuth(data.token, data.user)
+
+      return data
+    } catch (err: any) {
+      throw new Error(extractError(err))
     } finally {
       loading.value = false
       loginInFlight = false
@@ -82,13 +164,16 @@ export const useAuth = () => {
   }
 
   const applyAuth = (authToken: string, authUser: User) => {
+    const { __typename, ...cleanUser } = (authUser || {}) as any
+    const storedUser = cleanUser as User
+
     if (import.meta.client) {
       localStorage.setItem("token", authToken)
-      localStorage.setItem("user", JSON.stringify(authUser))
+      localStorage.setItem("user", JSON.stringify(storedUser))
     }
 
     token.value = authToken
-    user.value = authUser
+    user.value = storedUser
   }
 
   // Update user information
@@ -116,6 +201,7 @@ export const useAuth = () => {
     token,
     loading,
     login,
+    googleLogin,
     logout,
     checkAuth,
     applyAuth,
