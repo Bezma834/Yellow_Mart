@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/user";
+import actionRoutes from "./routes/actions";
 
 dotenv.config();
 
@@ -81,6 +82,13 @@ app.use(express.json());
 app.use(
   "/api/auth",
   authRoutes
+);
+
+
+// Hasura Action webhook handlers
+app.use(
+  "/api/actions",
+  actionRoutes
 );
 
 
