@@ -230,7 +230,6 @@ onMounted(() => {
       </span>
 
       <div class="info">
-
         <span v-if="business.city">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           {{ business.city }}
@@ -245,7 +244,6 @@ onMounted(() => {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           {{ business.views }}
         </span>
-
       </div>
 
       <div class="actions">
@@ -462,6 +460,11 @@ onMounted(() => {
   border-radius: 18px;
   border: 4px solid var(--color-surface);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.business-wrapper:hover .image-wrapper :deep(img) {
+  transform: scale(1.05);
 }
 
 .status-badge {
@@ -475,6 +478,18 @@ onMounted(() => {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.status-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .status-badge.approved {
@@ -501,6 +516,10 @@ onMounted(() => {
   line-height: 1.6;
   margin-bottom: 12px;
   flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .category-tag {

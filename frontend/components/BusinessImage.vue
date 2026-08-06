@@ -14,13 +14,6 @@ const props = defineProps({
 
 const imgFailed = ref(false)
 
-const hasImage = computed(() => {
-  const b = props.business as any
-  return Boolean(b?.image || b?.image_url)
-})
-
-// blob: URLs only exist in the browser session where the file was uploaded -
-// they break everywhere else, so treat them as "no photo".
 const isBlobUrl = (url: string) => url.startsWith("blob:")
 
 const initials = computed(() => {
@@ -63,13 +56,16 @@ const onImgError = () => {
     class="business-avatar"
     :aria-label="`${business.name || 'Business'} has no photo`"
   >
-    <span class="avatar-initials">{{ initials }}</span>
-    <span class="avatar-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+    <div class="avatar-monogram">
+      <span class="avatar-initials">{{ initials }}</span>
+    </div>
+    <span class="avatar-caption">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M3 9l1.5-5h15L21 9"/>
         <path d="M5 9v11h14V9"/>
         <path d="M9 20v-6h6v6"/>
       </svg>
+      No photo
     </span>
   </div>
 </template>
@@ -82,26 +78,53 @@ const onImgError = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  background: linear-gradient(135deg, var(--color-primary), #d97706);
-  color: var(--color-dark-bg);
+  gap: 0.75rem;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 35%, rgba(245, 158, 11, 0.1), transparent 70%),
+    var(--color-bg-tertiary);
+}
+
+.avatar-monogram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  color: var(--color-text-inverse);
+  box-shadow: 0 10px 24px -8px var(--color-primary-glow);
 }
 
 .avatar-initials {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 1.5rem;
-  letter-spacing: 0.02em;
+  font-size: clamp(1.125rem, 2.4vw, 2.5rem);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   line-height: 1;
 }
 
-.avatar-icon {
-  display: flex;
-  opacity: 0.75;
+.avatar-caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+</style>
+
+<style>
+:root.dark .business-avatar {
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 35%, rgba(245, 158, 11, 0.12), transparent 70%),
+    var(--color-dark-bg-tertiary);
 }
 
-.avatar-icon svg {
-  display: block;
+:root.dark .avatar-caption {
+  color: var(--color-text-secondary);
 }
 </style>
