@@ -17,6 +17,12 @@ const message = ref("")
 
 const showLogoutModal = ref(false)
 
+const showDeleteModal = ref(false)
+
+const deletePassword = ref("")
+
+const deleting = ref(false)
+
 
 // NOTIFICATIONS
 
@@ -37,6 +43,96 @@ const toggleNotifications = ()=>{
 
   }
 
+
+}
+
+
+
+// DELETE ACCOUNT
+
+const deleteAccount = ()=>{
+
+  deletePassword.value = ""
+
+  showDeleteModal.value = true
+
+}
+
+
+const cancelDelete = ()=>{
+
+  showDeleteModal.value = false
+
+  deletePassword.value = ""
+
+}
+
+
+const confirmDelete = async ()=>{
+
+  if(deleting.value) return
+
+  deleting.value = true
+
+  message.value = ""
+
+  try {
+
+    const token = localStorage.getItem("token")
+
+    await $fetch(
+
+      "https://yellow-mart-backend.onrender.com/api/delete-account",
+
+      {
+
+        method: "POST",
+
+        headers: {
+
+          "Content-Type": "application/json",
+
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+
+        },
+
+        body: JSON.stringify({
+
+          password: deletePassword.value
+
+        })
+
+      }
+
+    ) as any
+
+    showDeleteModal.value = false
+
+    deletePassword.value = ""
+
+    logout()
+
+    router.push("/")
+
+  }
+
+  catch (err:any) {
+
+    const data = err?.data
+
+    message.value =
+
+      data?.message ||
+
+      "Failed to delete account. Please try again."
+
+  }
+
+  finally {
+
+    deleting.value = false
+
+  }
 
 }
 
@@ -72,15 +168,6 @@ const cancelLogout = ()=>{
 
 
 
-// DELETE ACCOUNT
-
-const deleteAccount = ()=>{
-
-
-  message.value = "Account deletion will be available soon."
-
-
-}
 
 
 
@@ -290,6 +377,54 @@ onMounted(()=>{
 
         <button class="modal-confirm" @click="confirmLogout">
           Log Out
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- Delete Account Confirm Modal -->
+
+  <div
+    v-if="showDeleteModal"
+    class="modal-overlay"
+    @click.self="cancelDelete"
+  >
+
+    <div class="modal-box">
+
+      <div class="modal-icon danger-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </div>
+
+      <h3>Delete your account?</h3>
+
+      <p>
+        This will permanently remove your account, your businesses,
+        and your favorites. Enter your password to confirm.
+      </p>
+
+      <input
+        v-model="deletePassword"
+        type="password"
+        class="delete-input"
+        placeholder="Enter your password"
+        :disabled="deleting"
+        @keyup.enter="confirmDelete"
+      />
+
+      <div class="modal-actions">
+
+        <button class="modal-cancel" :disabled="deleting" @click="cancelDelete">
+          Cancel
+        </button>
+
+        <button class="modal-confirm delete-confirm" :disabled="deleting" @click="confirmDelete">
+          {{ deleting ? "Deleting..." : "Delete Account" }}
         </button>
 
       </div>
@@ -824,6 +959,70 @@ background:#dc2626;
 
 }
 
+.modal-icon.danger-icon{
+
+background:#fee2e2;
+
+color:#dc2626;
+
+}
+
+.delete-input{
+
+width:100%;
+
+padding:12px 16px;
+
+margin-bottom:24px;
+
+border:2px solid var(--color-border);
+
+border-radius:var(--radius-lg);
+
+background:var(--color-bg-tertiary);
+
+color:var(--color-text-primary);
+
+font-size:15px;
+
+font-weight:600;
+
+outline:none;
+
+transition:.2s;
+
+box-sizing:border-box;
+
+}
+
+.delete-input:focus{
+
+border-color:#ef4444;
+
+}
+
+.delete-confirm{
+
+background:#dc2626;
+
+}
+
+.delete-confirm:hover{
+
+background:#b91c1c;
+
+}
+
+.delete-confirm:disabled,
+
+.modal-cancel:disabled{
+
+opacity:.6;
+
+cursor:not-allowed;
+
+}
+
 @keyframes fadeIn{
 
 from{opacity:0}
@@ -950,5 +1149,29 @@ padding:20px 0;
 :root.dark .modal-confirm:hover {
   background: #dc2626;
   color: white;
+}
+
+:root.dark .modal-icon.danger-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+:root.dark .delete-input {
+  background: var(--color-dark-bg-tertiary);
+  border-color: var(--color-dark-border);
+  color: var(--color-text-primary);
+}
+
+:root.dark .delete-input:focus {
+  border-color: #ef4444;
+}
+
+:root.dark .delete-confirm {
+  background: #dc2626;
+  color: white;
+}
+
+:root.dark .delete-confirm:hover {
+  background: #b91c1c;
 }
 </style>

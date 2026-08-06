@@ -441,22 +441,10 @@ const milestones = [
 
 const team = [
   {
-    name: "Abebe Kebede",
+    name: "Bezawit Tenaw",
     role: "Founder & CEO",
-    initials: "AK",
+    initials: "BT",
     bio: "Passionate about connecting Ethiopian businesses with the digital economy."
-  },
-  {
-    name: "Sara Hailu",
-    role: "Operations Lead",
-    initials: "SH",
-    bio: "Ensuring every business listing meets quality standards and reaches the right audience."
-  },
-  {
-    name: "Dawit Eshetu",
-    role: "Community Manager",
-    initials: "DE",
-    bio: "Building relationships between businesses and customers across Ethiopia."
   }
 ]
 
@@ -1132,6 +1120,8 @@ text-align:center;
 
 font-size:40px;
 
+color:var(--color-text-inverse);
+
 }
 
 
@@ -1417,7 +1407,7 @@ font-size:14px;
   background: var(--color-dark-bg-secondary);
 }
 :root.dark .cta h2 {
-  color: var(--color-text-inverse);
+  color: var(--color-text-primary);
 }
 :root.dark .cta p {
   color: var(--color-text-secondary);
