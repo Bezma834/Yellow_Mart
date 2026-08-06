@@ -5,7 +5,13 @@ import pool from "../db/db";
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+// Accept both OAuth clients (local dev + production frontend)
+const GOOGLE_CLIENT_IDS = [
+  "353855053860-khcclj6auvae5enurefp0b4g6nd1fcf2.apps.googleusercontent.com",
+  "353855053860-8po57mngnlgrd7m0moniht4bor8jdo37.apps.googleusercontent.com"
+].filter(Boolean);
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || GOOGLE_CLIENT_IDS[0];
 
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
@@ -95,7 +101,7 @@ export const googleLoginUser = async (
 
   const ticket = await googleClient.verifyIdToken({
     idToken: googleToken,
-    audience: GOOGLE_CLIENT_ID
+    audience: GOOGLE_CLIENT_IDS
   });
 
   const payload = ticket.getPayload();

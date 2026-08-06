@@ -12,8 +12,14 @@ const router = Router()
 const JWT_SECRET =
 process.env.JWT_SECRET || "secret"
 
+const GOOGLE_CLIENT_IDS = [
+"353855053860-khcclj6auvae5enurefp0b4g6nd1fcf2.apps.googleusercontent.com",
+"353855053860-8po57mngnlgrd7m0moniht4bor8jdo37.apps.googleusercontent.com"
+]
+
 const GOOGLE_CLIENT_ID =
-process.env.GOOGLE_CLIENT_ID
+process.env.GOOGLE_CLIENT_ID ||
+GOOGLE_CLIENT_IDS[0]
 
 
 const googleClient =
@@ -454,7 +460,7 @@ router.post("/google", async (req, res) => {
 
         idToken: token,
 
-        audience: GOOGLE_CLIENT_ID
+        audience: GOOGLE_CLIENT_IDS
 
       })
 
