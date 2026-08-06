@@ -98,14 +98,18 @@
 
 import { ref } from "vue"
 import { useRouter } from "vue-router"
+import { useAuth } from "~/composables/useAuth"
 
 const router = useRouter()
+const { login: authLogin, applyAuth, loading: authLoading } = useAuth()
 
 const identifier = ref("")
 const password = ref("")
 const error = ref("")
-const loading = ref(false)
 const showPassword = ref(false)
+
+// Single source of truth for loading (drives the button disabled state)
+const loading = authLoading
 
 
 const validate = () => {
@@ -133,42 +137,18 @@ const login = async () => {
 
   error.value = ""
 
-  if (!validate()) return
+  if (loading.value) return
 
-  loading.value = true
+  if (!validate()) return
 
   try {
 
-    const res = await fetch(
-      "https://yellow-mart-backend.onrender.com/api/auth/login",
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-          email: identifier.value,
-          password: password.value
-        })
-      }
+    const res = await authLogin(
+      identifier.value,
+      password.value
     )
 
-    const data = await res.json()
-
-    if (!res.ok) {
-
-      error.value = data.message || "Invalid email or password"
-
-      return
-    }
-
-    localStorage.setItem("token", data.token)
-
-    localStorage.setItem("user", JSON.stringify(data.user))
-
-    if (data.user?.role?.trim() === "admin") {
+    if (res?.user?.role?.trim() === "admin") {
 
       router.push("/admin")
 
@@ -178,26 +158,27 @@ const login = async () => {
 
     }
 
-  } catch (err) {
+  } catch (err: any) {
 
-    console.error("LOGIN ERROR:", err)
-
-    error.value = "Cannot connect to server. Please try again."
-
-  } finally {
-
-    loading.value = false
+    error.value = err.message || "Invalid email or password"
 
   }
+
 }
 
 
 const googleLogin = async (response: any) => {
 
   error.value = ""
+
+  if (loading.value) return
+
   loading.value = true
 
   try {
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30000)
 
     const res = await fetch(
       "https://yellow-mart-backend.onrender.com/api/auth/google",
@@ -206,9 +187,12 @@ const googleLogin = async (response: any) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           token: response.credential
-        })
+        }),
+        signal: controller.signal
       }
     )
+
+    clearTimeout(timeout)
 
     const data = await res.json()
 
@@ -217,8 +201,7 @@ const googleLogin = async (response: any) => {
       return
     }
 
-    localStorage.setItem("token", data.token)
-    localStorage.setItem("user", JSON.stringify(data.user))
+    applyAuth(data.token, data.user)
 
     if (data.user?.role?.trim() === "admin") {
       router.push("/admin")

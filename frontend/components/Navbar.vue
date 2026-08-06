@@ -277,7 +277,7 @@ import { useAuth } from "~/composables/useAuth"
 import { useTheme } from "~/composables/useTheme"
 
 const router = useRouter()
-const { user, logout, checkAuth } = useAuth()
+const { user, logout } = useAuth()
 const { darkMode, toggleTheme, loadTheme } = useTheme()
 
 const searchQuery = ref("")
@@ -312,7 +312,6 @@ const handleSearch = () => {
 }
 
 onMounted(() => {
-  checkAuth()
   loadTheme()
   window.addEventListener("scroll", handleScroll)
 })
