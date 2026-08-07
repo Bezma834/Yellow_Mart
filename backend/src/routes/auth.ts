@@ -35,9 +35,6 @@ const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const hashValue = (value: string) =>
   crypto.createHash("sha256").update(value).digest("hex")
 
-const generateCode = () =>
-  String(crypto.randomInt(100000, 999999))
-
 const generateToken = () =>
   crypto.randomBytes(32).toString("hex")
 
@@ -154,17 +151,6 @@ router.post("/signup", async(req,res)=>{
 
 
 
-    const verificationCode =
-      generateCode()
-
-    const codeHash =
-      hashValue(verificationCode)
-
-    const codeExpiry =
-      new Date(Date.now() + 10 * 60 * 1000)
-
-
-
     const result =
       await pool.query(
         `
@@ -177,12 +163,11 @@ router.post("/signup", async(req,res)=>{
           phone,
           avatar,
           role,
-          verification_code_hash,
-          verification_code_expires_at
+          email_verified
         )
 
         VALUES
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        ($1,$2,$3,$4,$5,$6,$7,$8)
 
         RETURNING
         id,
@@ -201,8 +186,7 @@ router.post("/signup", async(req,res)=>{
           phone || null,
           avatar || null,
           "user",
-          codeHash,
-          codeExpiry
+          true
         ]
       )
 
@@ -213,32 +197,13 @@ router.post("/signup", async(req,res)=>{
 
 
 
-    await sendEmail({
-      to: email,
-      subject: "Verify your Yellow Mart email",
-      text:
-        `Welcome to Yellow Mart, ${name}!\n\n` +
-        `Your email verification code is: ${verificationCode}\n\n` +
-        `Enter this code on the verification page to activate your account. It expires in 10 minutes.\n\n` +
-        `If you did not create an account, you can safely ignore this email.`,
-      html:
-        `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px">` +
-        `<h2 style="color:#111827;margin:0 0 12px">Welcome to Yellow Mart!</h2>` +
-        `<p style="color:#4b5563;font-size:15px;line-height:1.6">Use the code below to verify your email address. It expires in 10 minutes.</p>` +
-        `<div style="background:#f59e0b;color:#111827;font-size:28px;font-weight:700;letter-spacing:8px;text-align:center;padding:16px;border-radius:8px;margin:16px 0">${verificationCode}</div>` +
-        `<p style="color:#9ca3af;font-size:13px">If you did not create an account, you can safely ignore this email.</p>` +
-        `</div>`
-    })
-
-
-
     return res.json({
 
       user,
 
-      emailVerified: false,
+      emailVerified: true,
 
-      message: "Account created. Check your email for the verification code."
+      message: "Account created successfully. You can now log in."
 
     })
 
@@ -701,120 +666,6 @@ router.post("/check-email", async (req, res) => {
     return res.status(500).json({
       valid: false,
       message: "Could not verify email. Please try again."
-    })
-
-  }
-
-})
-
-// ==============================
-// VERIFY EMAIL
-// ==============================
-
-router.post("/verify-email", async (req, res) => {
-
-  try {
-
-    const { email, code } = req.body
-
-    if (!email || !code) {
-
-      return res.status(400).json({
-        message: "Email and verification code are required"
-      })
-
-    }
-
-    const result = await pool.query(
-      `
-      SELECT *
-      FROM users
-      WHERE email = $1
-      `,
-      [email]
-    )
-
-    const user = result.rows[0]
-
-    if (!user) {
-
-      return res.status(400).json({
-        message: "No account found for this email"
-      })
-
-    }
-
-    if (user.email_verified) {
-
-      return res.json({
-        message: "Email already verified",
-        emailVerified: true
-      })
-
-    }
-
-    const codeHash = hashValue(String(code).trim())
-
-    if (
-      !user.verification_code_hash ||
-      user.verification_code_hash !== codeHash
-    ) {
-
-      return res.status(400).json({
-        message: "Invalid verification code"
-      })
-
-    }
-
-    if (
-      !user.verification_code_expires_at ||
-      new Date(user.verification_code_expires_at) < new Date()
-    ) {
-
-      return res.status(400).json({
-        message: "Verification code has expired. Please sign up again."
-      })
-
-    }
-
-    await pool.query(
-      `
-      UPDATE users
-      SET
-        email_verified = TRUE,
-        verification_code_hash = NULL,
-        verification_code_expires_at = NULL
-      WHERE id = $1
-      `,
-      [user.id]
-    )
-
-    await sendEmail({
-      to: email,
-      subject: "Your Yellow Mart account is verified",
-      text:
-        `Hi ${user.fullname || user.username},\n\n` +
-        `Your Yellow Mart account has been verified successfully.\n\n` +
-        `Welcome aboard! Explore businesses, save favorites, and connect with local services.`,
-      html:
-        `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px">` +
-        `<h2 style="color:#111827;margin:0 0 12px">Account Verified</h2>` +
-        `<p style="color:#4b5563;font-size:15px;line-height:1.6">Your Yellow Mart account is verified and ready to use.</p>` +
-        `<p style="color:#4b5563;font-size:15px;line-height:1.6">Explore businesses, save favorites, and connect with local services near you.</p>` +
-        `</div>`
-    })
-
-    return res.json({
-      message: "Email verified successfully",
-      emailVerified: true
-    })
-
-  } catch (error:any) {
-
-    console.error("Verify Email Error:", error)
-
-    return res.status(500).json({
-      message: "Verification failed. Please try again."
     })
 
   }

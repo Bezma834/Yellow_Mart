@@ -122,16 +122,10 @@
         <span>or continue with</span>
       </div>
 
-      <GoogleLogin :callback="googleLogin">
-        <button class="google-btn" type="button" :disabled="loading">
-          <img
-            class="google-icon"
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="Google"
-          />
-          Continue with Google
-        </button>
-      </GoogleLogin>
+      <GoogleLogin
+        :callback="googleLogin"
+        :button-config="googleButtonConfig"
+      />
 
       <p class="login-link">
         Already have an account?
@@ -166,6 +160,14 @@ const errorMsg = ref("")
 const loading = ref(false)
 
 const showPassword = ref(false)
+
+const googleButtonConfig = {
+  theme: "outline",
+  shape: "rectangular",
+  text: "continue_with",
+  width: "350",
+  logo_alignment: "center"
+}
 
 const emailCheckMsg = ref("")
 const emailCheckType = ref<"ok" | "bad">("ok")
@@ -321,9 +323,8 @@ const signup = async () => {
       return
     }
 
-    localStorage.setItem("pendingEmail", email.value)
-    success("Account created! Check your email for the verification code.")
-    router.push("/signup/verify-email?email=" + encodeURIComponent(email.value))
+    success("Account created! You can now log in.")
+    router.push("/login")
   }
   catch (err) {
     console.error(err)
@@ -803,59 +804,17 @@ input::placeholder {
 
   display: flex;
 
-  align-items: center;
-
   justify-content: center;
 
-  gap: 12px;
-
-  padding: 0.8125rem;
-
-  border: 1px solid var(--color-border);
-
-  border-radius: var(--radius-xl);
-
-  background: var(--color-surface);
-
-  color: var(--color-text-primary);
-
-  font-weight: 600;
-
-  font-size: 0.9375rem;
-
-  font-family: inherit;
-
-  cursor: pointer;
-
-  transition: all var(--transition-fast);
-
 }
 
-.google-btn:hover {
+.google-btn :deep(iframe) {
 
-  background: var(--color-bg-secondary);
+  width: 100% !important;
 
-  border-color: var(--color-border-hover);
+  max-width: 350px;
 
-}
-
-.google-btn:disabled {
-
-  opacity: 0.6;
-
-  cursor: not-allowed;
-
-}
-
-.google-icon {
-
-  width: 20px;
-
-  height: 20px;
-
-  object-fit: contain;
-
-  flex-shrink: 0;
+  height: 44px !important;
 
 }
 
@@ -956,16 +915,6 @@ input::placeholder {
 
 :root.dark .terms {
   color: var(--color-text-secondary);
-}
-
-:root.dark .google-btn {
-  background: var(--color-dark-bg-secondary);
-  border-color: var(--color-dark-border);
-  color: var(--color-text-primary);
-}
-
-:root.dark .google-btn:hover {
-  background: var(--color-dark-bg-tertiary);
 }
 
 :root.dark .error {
