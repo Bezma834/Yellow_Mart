@@ -3,7 +3,7 @@ import {
   REMOVE_FAVORITE,
   ADD_FAVORITE
 } from "~/graphql/queries"
-import { gql } from "@apollo/client"
+import gql from "graphql-tag"
 import { useRoute, useRouter } from "vue-router"
 import { ref, onMounted, nextTick } from "vue"
 import { useAuth } from "~/composables/useAuth"

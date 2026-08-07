@@ -2,7 +2,7 @@
 
 import { ref, onMounted } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { gql } from "@apollo/client"
+import gql from "graphql-tag"
 
 
 const route = useRoute()

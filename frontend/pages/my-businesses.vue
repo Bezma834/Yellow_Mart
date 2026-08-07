@@ -2,7 +2,7 @@
 
 import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { gql } from "@apollo/client"
+import gql from "graphql-tag"
 
 import { useAuth } from "~/composables/useAuth"
 import { useToast } from "~/composables/useToast"

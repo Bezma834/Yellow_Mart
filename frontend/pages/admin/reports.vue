@@ -8,7 +8,7 @@ layout:"admin"
 
 
 import { ref,onMounted } from "vue"
-import { gql } from "@apollo/client/core"
+import gql from "graphql-tag"
 
 const { $apollo } = useNuxtApp() as any
 

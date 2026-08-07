@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/user";
 import actionRoutes from "./routes/actions";
+import graphqlRoutes from "./routes/graphql";
 
 dotenv.config();
 
@@ -95,6 +96,13 @@ app.use(
 app.use(
   "/api",
   userRoutes
+);
+
+
+// GraphQL proxy (holds Hasura admin secret server-side)
+app.use(
+  "/api",
+  graphqlRoutes
 );
 
 

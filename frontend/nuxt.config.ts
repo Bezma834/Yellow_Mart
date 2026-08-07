@@ -27,8 +27,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      hasuraUrl: "https://inviting-moray-87.hasura.app/v1/graphql",
-      hasuraSecret: "",
+      backendUrl: "https://yellow-mart-backend.onrender.com/api",
       googleClientId: ""
     }
   }

@@ -1,5 +1,5 @@
 import { useState } from "#app"
-import { gql } from "@apollo/client"
+import gql from "graphql-tag"
 
 interface User {
   id: string

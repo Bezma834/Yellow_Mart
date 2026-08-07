@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { ref, onMounted } from "vue"
-import { gql } from "@apollo/client"
+import gql from "graphql-tag"
 import { useRouter } from "vue-router"
 import { useAuth } from "~/composables/useAuth"
 
