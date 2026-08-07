@@ -23,27 +23,6 @@ message:"User route working"
 
 
 
-router.post(
-"/change-password",
-(
-req:Request,
-res:Response
-)=>{
-
-
-res.json({
-
-message:"Change password route working"
-
-})
-
-
-}
-
-)
-
-
-
 // DELETE ACCOUNT
 // JWT required; password confirms the deletion is deliberate.
 // Google-only users (no stored password) skip the password check.

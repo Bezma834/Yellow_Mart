@@ -2,12 +2,9 @@
 
 import { ref } from "vue"
 import { useRouter } from "vue-router"
-import { useAuth } from "~/composables/useAuth"
 
 
 const router = useRouter()
-
-const { user } = useAuth()
 
 
 const oldPassword = ref("")
@@ -55,15 +52,17 @@ loading.value=true
 
 try{
 
+const token = localStorage.getItem("token")
+
 const result = await $fetch(
-  "https://yellow-mart-backend.onrender.com/api/change-password",
+  "https://yellow-mart-backend.onrender.com/api/auth/change-password",
   {
     method:"POST",
     headers:{
-      "Content-Type":"application/json"
+      "Content-Type":"application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
     },
     body:{
-      userId:user.value.id,
       oldPassword:oldPassword.value,
       newPassword:newPassword.value
     }

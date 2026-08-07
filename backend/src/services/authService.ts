@@ -1,9 +1,7 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import pool from "../db/db";
-
-const JWT_SECRET = process.env.JWT_SECRET || "secret";
+import { signToken } from "../utils/token";
 
 // Accept both OAuth clients (local dev + production frontend)
 const GOOGLE_CLIENT_IDS = [
@@ -39,13 +37,6 @@ export class AuthError extends Error {
     this.statusCode = statusCode;
   }
 }
-
-const signToken = (user: any) =>
-  jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
-    JWT_SECRET,
-    { expiresIn: "7d" }
-  );
 
 export const loginUser = async (
   email: string,
