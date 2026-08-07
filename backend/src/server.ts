@@ -2,10 +2,10 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import authRoutes from "./routes/auth";
-import userRoutes from "./routes/user";
-import actionRoutes from "./routes/actions";
-import graphqlRoutes from "./routes/graphql";
+import { authRouter } from "./controllers/authController";
+import { userRouter } from "./controllers/userController";
+import { actionRouter } from "./controllers/actionController";
+import { graphqlRouter } from "./controllers/graphqlController";
 
 dotenv.config();
 
@@ -82,27 +82,27 @@ app.use(express.json());
 // Routes
 app.use(
   "/api/auth",
-  authRoutes
+  authRouter
 );
 
 
 // Hasura Action webhook handlers
 app.use(
   "/api/actions",
-  actionRoutes
+  actionRouter
 );
 
 
 app.use(
   "/api",
-  userRoutes
+  userRouter
 );
 
 
 // GraphQL proxy (holds Hasura admin secret server-side)
 app.use(
   "/api",
-  graphqlRoutes
+  graphqlRouter
 );
 
 

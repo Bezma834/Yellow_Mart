@@ -1,10 +1,11 @@
-import { Request, Response } from "express";
+import { Request, Response, Router } from "express";
 import bcrypt from "bcrypt";
 import dns from "dns";
 import pool from "../db/db";
 import { sendEmail, FRONTEND_URL } from "../config/mailer";
 import { loginUser, googleLoginUser, AuthError } from "../services/authService";
 import { generateToken, hashValue } from "../utils/token";
+import { authMiddleware } from "../middleware/auth";
 
 // ==============================
 // EMAIL HELPERS
@@ -436,3 +437,13 @@ export const changePassword = async (req: any, res: Response) => {
     });
   }
 };
+
+export const authRouter = Router();
+
+authRouter.post("/signup", signup);
+authRouter.post("/login", login);
+authRouter.post("/google", googleLogin);
+authRouter.post("/check-email", checkEmail);
+authRouter.post("/forgot-password", forgotPassword);
+authRouter.post("/reset-password", resetPassword);
+authRouter.post("/change-password", authMiddleware, changePassword);

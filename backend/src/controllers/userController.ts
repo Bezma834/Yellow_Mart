@@ -1,7 +1,7 @@
-import { Request, Response } from "express"
+import { Request, Response, Router } from "express"
 import bcrypt from "bcrypt"
 import pool from "../db/db"
-
+import { authMiddleware } from "../middleware/auth"
 
 export const test = (
 req:Request,
@@ -175,3 +175,8 @@ finally {
 }
 
 }
+
+export const userRouter = Router()
+
+userRouter.get("/test", test)
+userRouter.post("/delete-account", authMiddleware, deleteAccount)

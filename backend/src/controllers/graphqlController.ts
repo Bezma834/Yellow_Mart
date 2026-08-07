@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, Router } from "express";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 
@@ -55,3 +55,7 @@ export const proxyGraphQL = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const graphqlRouter = Router();
+
+graphqlRouter.post("/graphql", proxyGraphQL);
