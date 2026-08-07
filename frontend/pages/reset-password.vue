@@ -58,6 +58,7 @@
 import { ref, computed } from "vue"
 import { useRoute } from "vue-router"
 import { useToast } from "~/composables/useToast"
+import { RESET_PASSWORD_MUTATION } from "~/graphql/mutations"
 
 const { success, error } = useToast()
 const route = useRoute()
@@ -95,34 +96,25 @@ const reset = async () => {
   message.value = ""
 
   try {
-    const res = await fetch(
-      "https://yellow-mart-backend.onrender.com/api/auth/reset-password",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: token.value,
-          password: password.value
-        })
+    const { $apollo } = useNuxtApp() as any
+
+    const res = await $apollo.mutate({
+      mutation: RESET_PASSWORD_MUTATION,
+      variables: {
+        token: token.value,
+        password: password.value
       }
-    )
+    })
 
-    const data = await res.json().catch(() => ({ message: "Server error. Please try again." }))
-
-    if (!res.ok) {
-      messageType.value = "error"
-      message.value = data.message || "Could not reset password"
-      error(data.message || "Could not reset password")
-      return
-    }
+    const data = res.data.resetPassword
 
     success(data.message || "Password reset successfully. You can now log in.")
     await navigateTo("/login")
-  } catch (err) {
+  } catch (err: any) {
     console.error(err)
     messageType.value = "error"
-    message.value = "Cannot connect to server. Please try again."
-    error("Cannot connect to server. Please try again.")
+    message.value = err.message || "Could not reset password"
+    error(err.message || "Could not reset password")
   } finally {
     loading.value = false
   }

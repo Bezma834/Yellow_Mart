@@ -141,6 +141,7 @@ import { ref, computed } from "vue"
 import { useRouter } from "vue-router"
 import { useToast } from "~/composables/useToast"
 import { useAuth } from "~/composables/useAuth"
+import { SIGNUP_MUTATION, CHECK_EMAIL_MUTATION } from "~/graphql/mutations"
 const router = useRouter()
 const { success, error } = useToast()
 const { googleLogin: authGoogleLogin } = useAuth()
@@ -210,16 +211,14 @@ const checkEmail = async () => {
   emailCheckMsg.value = "Checking email..."
 
   try {
-    const res = await fetch(
-      "https://yellow-mart-backend.onrender.com/api/auth/check-email",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: value })
-      }
-    )
+    const { $apollo } = useNuxtApp() as any
 
-    const data = await res.json().catch(() => ({ valid: false, message: "Server error. Please try again." }))
+    const res = await $apollo.mutate({
+      mutation: CHECK_EMAIL_MUTATION,
+      variables: { email: value }
+    })
+
+    const data = res.data.checkEmail
 
     if (data.valid) {
       emailCheckMsg.value = "Email looks good"
@@ -229,7 +228,7 @@ const checkEmail = async () => {
       emailCheckMsg.value = data.message || "This email address does not exist"
       emailCheckType.value = "bad"
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error(err)
     emailCheckMsg.value = "Could not verify email. Please try again."
     emailCheckType.value = "bad"
@@ -297,39 +296,27 @@ const signup = async () => {
 
   try {
 
-    const res = await fetch(
-      "https://yellow-mart-backend.onrender.com/api/auth/signup",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username: username.value,
-          name: fullName.value,
-          email: email.value,
-          password: password.value,
-          phone: phone.value,
-          avatar: null
-        })
+    const { $apollo } = useNuxtApp() as any
+
+    const res = await $apollo.mutate({
+      mutation: SIGNUP_MUTATION,
+      variables: {
+        username: username.value.trim(),
+        name: fullName.value.trim(),
+        email: email.value.trim(),
+        password: password.value,
+        phone: phone.value.trim() || null,
+        avatar: null
       }
-    )
-
-    const data = await res.json().catch(() => ({ message: "Server error. Please try again." }))
-
-    if (!res.ok) {
-      errorMsg.value = data.message || "Signup failed"
-      error(data.message || "Signup failed")
-      return
-    }
+    })
 
     success("Account created! You can now log in.")
     router.push("/login")
   }
-  catch (err) {
+  catch (err: any) {
     console.error(err)
-    errorMsg.value = "Cannot connect to server"
-    error("Cannot connect to server")
+    errorMsg.value = err.message || "Signup failed"
+    error(err.message || "Signup failed")
   }
   finally {
     loading.value = false

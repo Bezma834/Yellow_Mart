@@ -4,6 +4,7 @@ import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import { useAuth } from "~/composables/useAuth"
 import { useTheme } from "~/composables/useTheme"
+import { DELETE_ACCOUNT_MUTATION } from "~/graphql/mutations"
 const router = useRouter()
 
 const { user, logout } = useAuth()
@@ -78,33 +79,14 @@ const confirmDelete = async ()=>{
 
   try {
 
-    const token = localStorage.getItem("token")
+    const { $apollo } = useNuxtApp() as any
 
-    await $fetch(
-
-      "https://yellow-mart-backend.onrender.com/api/delete-account",
-
-      {
-
-        method: "POST",
-
-        headers: {
-
-          "Content-Type": "application/json",
-
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-
-        },
-
-        body: JSON.stringify({
-
-          password: deletePassword.value
-
-        })
-
+    await $apollo.mutate({
+      mutation: DELETE_ACCOUNT_MUTATION,
+      variables: {
+        password: deletePassword.value
       }
-
-    ) as any
+    })
 
     showDeleteModal.value = false
 
@@ -118,11 +100,9 @@ const confirmDelete = async ()=>{
 
   catch (err:any) {
 
-    const data = err?.data
-
     message.value =
 
-      data?.message ||
+      err?.message ||
 
       "Failed to delete account. Please try again."
 

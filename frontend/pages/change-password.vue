@@ -2,6 +2,7 @@
 
 import { ref } from "vue"
 import { useRouter } from "vue-router"
+import { CHANGE_PASSWORD_MUTATION } from "~/graphql/mutations"
 
 
 const router = useRouter()
@@ -52,24 +53,20 @@ loading.value=true
 
 try{
 
-const token = localStorage.getItem("token")
+const { $apollo } = useNuxtApp() as any
 
-const result = await $fetch(
-  "https://yellow-mart-backend.onrender.com/api/auth/change-password",
-  {
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    },
-    body:{
-      oldPassword:oldPassword.value,
-      newPassword:newPassword.value
-    }
+const res = await $apollo.mutate({
+  mutation: CHANGE_PASSWORD_MUTATION,
+  variables: {
+    oldPassword: oldPassword.value,
+    newPassword: newPassword.value
   }
-)
+})
+
+const data = res.data.changePassword
+
 message.value =
-result.message
+data.message
 
 
 
@@ -90,7 +87,7 @@ console.error(err)
 
 
 error.value =
-err.data?.message ||
+err.message ||
 "Something went wrong"
 
 
