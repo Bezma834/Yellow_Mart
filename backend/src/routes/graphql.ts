@@ -1,70 +1,8 @@
-import { Router, Request, Response } from "express";
-import axios from "axios";
-import jwt from "jsonwebtoken";
+import { Router } from "express";
+import { proxyGraphQL } from "../controllers/graphqlController";
 
 const router = Router();
 
-// GraphQL proxy: keeps the Hasura admin secret server-side.
-// The frontend sends only the user's JWT (Authorization: Bearer ...);
-// this route forwards to Hasura with the admin secret so the secret
-// never reaches the browser.
-router.post("/graphql", async (req: Request, res: Response) => {
-  const { query, variables } = req.body || {};
-
-  if (!query) {
-    return res.status(400).json({
-      errors: [{ message: "Missing query" }],
-    });
-  }
-
-  const headers: Record<string, string> = {
-    "x-hasura-admin-secret": process.env.HASURA_SECRET || "",
-  };
-
-  // Optional user context: attach the user's identity to Hasura session
-  // variables when a valid JWT is present. Invalid/expired tokens are
-  // forwarded without user context so public queries keep working.
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : "";
-
-  if (token) {
-    try {
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET || "secret"
-      ) as any;
-
-      if (decoded?.id) {
-        headers["x-hasura-user-id"] = String(decoded.id);
-      }
-
-      if (decoded?.role) {
-        headers["x-hasura-role"] = String(decoded.role);
-      }
-    } catch {
-      // Ignore invalid token - forward without user context
-    }
-  }
-
-  try {
-    const response = await axios.post(
-      process.env.HASURA_URL || "",
-      { query, variables },
-      { headers }
-    );
-
-    return res.status(response.status).json(response.data);
-  } catch (err: any) {
-    if (err.response) {
-      return res.status(err.response.status).json(err.response.data);
-    }
-
-    return res.status(502).json({
-      errors: [{ message: "GraphQL proxy failed to reach the database" }],
-    });
-  }
-});
+router.post("/graphql", proxyGraphQL);
 
 export default router;
