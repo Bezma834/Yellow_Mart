@@ -166,6 +166,7 @@ const googleButtonConfig = {
   theme: "outline",
   shape: "rectangular",
   text: "continue_with",
+  locale: "en-US",
   width: "350",
   logo_alignment: "center"
 }

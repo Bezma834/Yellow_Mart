@@ -268,8 +268,6 @@ Helping customers and businesses grow.
 
 <h2>Our Journey</h2>
 
-<div class="timeline-line"></div>
-
 <div class="timeline-items">
 
 <div class="tl-item" v-for="(item, i) in milestones" :key="i">
@@ -648,6 +646,8 @@ font-size:55px;
 
 font-weight:900;
 
+color:#ffffff;
+
 }
 
 
@@ -664,7 +664,7 @@ color:var(--color-primary);
 
 font-size:20px;
 
-color:var(--color-text-secondary);
+color:rgba(255,255,255,0.92);
 
 }
 
@@ -731,7 +731,7 @@ color:var(--color-primary);
 
 .stat-card p{
 
-color:var(--color-text-tertiary);
+color:var(--color-text-secondary);
 
 font-weight:600;
 
@@ -945,14 +945,7 @@ var(--color-primary-glow);
 }
 
 .timeline-line {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: linear-gradient(180deg, var(--color-primary), var(--color-secondary));
-  border-radius: 4px;
-  transform: translateX(-50%);
+  display: none;
 }
 
 .tl-item {
@@ -1217,10 +1210,6 @@ font-size:35px;
 .mission-vision {
   grid-template-columns: 1fr;
   padding: 10px 5% 50px;
-}
-
-.timeline-line {
-  left: 20px;
 }
 
 .tl-item:nth-child(odd),
