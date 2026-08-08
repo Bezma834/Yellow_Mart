@@ -1,4 +1,4 @@
-import { Request, Response, Router } from "express";
+import { Request, Response } from "express";
 import { loginUser, googleLoginUser, AuthError } from "../services/authService";
 import {
   signup,
@@ -117,14 +117,3 @@ export const actionDeleteAccount = async (req: Request, res: Response) => {
     return res.status(status).json(body);
   }
 };
-
-export const actionRouter = Router();
-
-actionRouter.post("/login", actionLogin);
-actionRouter.post("/google", actionGoogle);
-actionRouter.post("/signup", actionSignup);
-actionRouter.post("/checkEmail", actionCheckEmail);
-actionRouter.post("/forgotPassword", actionForgotPassword);
-actionRouter.post("/resetPassword", actionResetPassword);
-actionRouter.post("/changePassword", actionChangePassword);
-actionRouter.post("/deleteAccount", actionDeleteAccount);
