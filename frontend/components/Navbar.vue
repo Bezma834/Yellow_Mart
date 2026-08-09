@@ -70,7 +70,7 @@
             <img v-if="user?.avatar" :src="user.avatar" alt="Avatar" />
             <span v-else>{{ user?.fullname?.charAt(0).toUpperCase() || "U" }}</span>
           </div>
-          <span class="user-name">{{ user?.displayName || user?.email }}</span>
+          <span class="user-name">{{ user?.fullname || user?.username || user?.email }}</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
@@ -84,7 +84,7 @@
                 <span v-else>{{ user?.fullname?.charAt(0).toUpperCase() || "U" }}</span>
               </div>
               <div>
-                <h4>{{ user?.displayName || "Yellow Mart User" }}</h4>
+                <h4>{{ user?.fullname || user?.username || "Yellow Mart User" }}</h4>
                 <p>{{ user?.email }}</p>
               </div>
             </div>
@@ -112,6 +112,13 @@
                 <polyline points="9 22 9 12 15 12 15 22"/>
               </svg>
               My Businesses
+            </NuxtLink>
+
+            <NuxtLink v-if="user?.role === 'admin'" to="/admin" class="dropdown-item" @click="open = false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Admin Dashboard
             </NuxtLink>
 
             <NuxtLink to="/settings" class="dropdown-item">
@@ -200,6 +207,12 @@
               <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
             My Businesses
+          </NuxtLink>
+          <NuxtLink v-if="user?.role === 'admin'" to="/admin" class="mobile-link" @click="mobileOpen = false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Admin Dashboard
           </NuxtLink>
           <NuxtLink v-if="!user" to="/login" class="mobile-link" @click="mobileOpen = false">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -4,14 +4,20 @@ definePageMeta({
   middleware: "admin"
 })
 
-import { ref, onMounted } from "vue"
+import { ref, computed, onMounted, nextTick } from "vue"
+import L from "leaflet"
+import "leaflet/dist/leaflet.css"
 import { useAdminApi } from "~/composables/useAdminApi"
 
 const { getBusinesses, loading } = useAdminApi()
 
 const businesses = ref<any[]>([])
 const error = ref("")
-const mapStatus = ref<"loading" | "ready" | "no-key" | "error">("loading")
+const mapStatus = ref<"loading" | "ready" | "error" | "empty">("loading")
+
+const locatedBusinesses = computed(() =>
+  businesses.value.filter((b) => b.lat != null && b.lng != null)
+)
 
 const loadBusinesses = async () => {
   error.value = ""
@@ -25,38 +31,59 @@ const loadBusinesses = async () => {
 }
 
 const initMap = async () => {
-  const apiKey = useRuntimeConfig().public.googleMapsKey as string | undefined
+  const withLocation = locatedBusinesses.value
 
-  if (!apiKey || apiKey === "YOUR_GOOGLE_MAPS_KEY") {
-    mapStatus.value = "no-key"
+  if (withLocation.length === 0) {
+    mapStatus.value = "empty"
     return
   }
 
   try {
-    const { Loader } = await import("@googlemaps/js-api-loader")
-    const loader = new Loader({ apiKey })
-    const google = await loader.load()
+    await nextTick()
 
     const el = document.getElementById("admin-map") as HTMLElement
     if (!el) return
 
-    const map = new google.maps.Map(el, {
-      center: { lat: 9.03, lng: 38.74 },
+    const map = L.map(el, {
+      center: [9.03, 38.74],
       zoom: 11
     })
 
-    const markers = businesses.value.filter(
-      (b) => b.lat != null && b.lng != null
-    )
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map)
 
-    markers.forEach((business) => {
-      new google.maps.Marker({
-        position: { lat: Number(business.lat), lng: Number(business.lng) },
-        map,
-        title: business.name
-      })
+    const pinIcon = L.divIcon({
+      className: "ym-map-pin",
+      html: '<div class="ym-map-pin-dot"></div>',
+      iconSize: [24, 30],
+      iconAnchor: [12, 30],
+      popupAnchor: [0, -28]
     })
 
+    withLocation.forEach((business) => {
+      const safeName = String(business.name || "Business")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+      const safeAddress = business.address
+        ? String(business.address)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+        : ""
+
+      L.marker([Number(business.lat), Number(business.lng)], { icon: pinIcon })
+        .addTo(map)
+        .bindPopup(
+          `<strong>${safeName}</strong>${safeAddress ? `<br/>${safeAddress}` : ""}`
+        )
+    })
+
+    map.invalidateSize()
     mapStatus.value = "ready"
   } catch (err) {
     console.error("MAP ERROR:", err)
@@ -75,7 +102,7 @@ onMounted(async () => {
     <div class="page-header">
       <div>
         <h1>Business Map</h1>
-        <p>{{ businesses.length }} approved businesses with location data</p>
+        <p>{{ locatedBusinesses.length }} approved businesses with location data</p>
       </div>
     </div>
 
@@ -86,12 +113,12 @@ onMounted(async () => {
 
     <div v-if="loading" class="map-skeleton"></div>
 
-    <div v-else-if="mapStatus === 'no-key'" class="no-key">
+    <div v-else-if="mapStatus === 'empty'" class="no-key">
       <div class="no-key-icon">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       </div>
-      <h3>Google Maps key not configured</h3>
-      <p>Add <code>NUXT_PUBLIC_GOOGLE_MAPS_KEY</code> to your frontend environment to display the map.</p>
+      <h3>No location data yet</h3>
+      <p>No approved businesses have location coordinates yet. Add lat/lng when creating or editing a business and it will appear here.</p>
     </div>
 
     <div v-else-if="mapStatus === 'error'" class="no-key">
@@ -99,7 +126,7 @@ onMounted(async () => {
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </div>
       <h3>Could not load the map</h3>
-      <p>Check that your Google Maps key is valid and has Maps JavaScript API enabled.</p>
+      <p>The map tiles could not be loaded. Check your internet connection and try again.</p>
     </div>
 
     <div v-else id="admin-map" class="map-canvas"></div>
@@ -170,6 +197,8 @@ onMounted(async () => {
   border-radius: 16px;
   border: 1px solid var(--color-border-light);
   overflow: hidden;
+  position: relative;
+  z-index: 0;
 }
 
 .map-skeleton {
@@ -224,11 +253,40 @@ onMounted(async () => {
   max-width: 420px;
   line-height: 1.6;
 }
+</style>
 
-.no-key code {
-  background: var(--color-bg-tertiary);
-  padding: 2px 8px;
-  border-radius: 6px;
+<style>
+/* Leaflet pin marker (injected by Leaflet, so it needs non-scoped styles) */
+.ym-map-pin {
+  background: transparent;
+  border: none;
+}
+
+.ym-map-pin-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--color-primary);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  transform: rotate(-45deg);
+}
+
+.ym-map-pin-dot::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  left: 5px;
+  top: 5px;
+}
+
+.leaflet-popup-content {
+  font-family: inherit;
   font-size: 13px;
+  color: var(--color-text-primary);
+  margin: 12px 14px;
 }
 </style>
