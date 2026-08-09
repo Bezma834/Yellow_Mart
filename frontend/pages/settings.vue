@@ -24,26 +24,93 @@ const deletePassword = ref("")
 
 const deleting = ref(false)
 
+const deleteError = ref("")
+
 
 // NOTIFICATIONS
 
-const toggleNotifications = ()=>{
+const toggleNotifications = async ()=>{
 
 
-  if(import.meta.client){
+  if(!import.meta.client) return
 
+
+  // Turning OFF: just persist the choice.
+
+  if(!notifications.value){
 
     localStorage.setItem(
-
       "notifications",
-
-      String(notifications.value)
-
+      "false"
     )
 
+    return
 
   }
 
+
+  // Turning ON: the browser must ask for permission FIRST.
+
+  if(
+    typeof window === "undefined" ||
+    !("Notification" in window)
+  ){
+
+    notifications.value = false
+
+    message.value =
+      "Notifications are not supported in this browser."
+
+    return
+
+  }
+
+
+  try {
+
+    const permission =
+      await Notification.requestPermission()
+
+
+    if(permission === "granted"){
+
+      localStorage.setItem(
+        "notifications",
+        "true"
+      )
+
+      message.value = ""
+      return
+
+    }
+
+
+    // Permission not granted -> keep the toggle OFF.
+
+    notifications.value = false
+
+    localStorage.setItem(
+      "notifications",
+      "false"
+    )
+
+    message.value =
+      permission === "denied"
+        ? "Notifications are blocked. Allow them in your browser settings, then try again."
+        : "Permission request was dismissed. Toggle notifications on again to retry."
+
+  }
+
+  catch (err){
+
+    console.error(err)
+
+    notifications.value = false
+
+    message.value =
+      "Could not request notification permission."
+
+  }
 
 }
 
@@ -54,6 +121,8 @@ const toggleNotifications = ()=>{
 const deleteAccount = ()=>{
 
   deletePassword.value = ""
+
+  deleteError.value = ""
 
   showDeleteModal.value = true
 
@@ -66,6 +135,8 @@ const cancelDelete = ()=>{
 
   deletePassword.value = ""
 
+  deleteError.value = ""
+
 }
 
 
@@ -75,7 +146,7 @@ const confirmDelete = async ()=>{
 
   deleting.value = true
 
-  message.value = ""
+  deleteError.value = ""
 
   try {
 
@@ -100,7 +171,7 @@ const confirmDelete = async ()=>{
 
   catch (err:any) {
 
-    message.value =
+    deleteError.value =
 
       err?.message ||
 
@@ -392,10 +463,15 @@ onMounted(()=>{
         v-model="deletePassword"
         type="password"
         class="delete-input"
+        :class="{ 'delete-input-error': deleteError }"
         placeholder="Enter your password"
         :disabled="deleting"
         @keyup.enter="confirmDelete"
       />
+
+      <p v-if="deleteError" class="delete-error">
+        {{ deleteError }}
+      </p>
 
       <div class="modal-actions">
 
@@ -977,7 +1053,36 @@ box-sizing:border-box;
 
 .delete-input:focus{
 
-border-color:#ef4444;
+  border-color:#ef4444;
+
+}
+
+.delete-input-error,
+.delete-input-error:focus{
+
+  border-color:#ef4444;
+
+  background:rgba(239,68,68,.05);
+
+}
+
+.delete-error{
+
+  color:#dc2626;
+
+  font-size:13px;
+
+  font-weight:600;
+
+  margin:-14px 0 20px;
+
+  text-align:left;
+
+}
+
+:root.dark .delete-error {
+
+  color: #f87171;
 
 }
 
