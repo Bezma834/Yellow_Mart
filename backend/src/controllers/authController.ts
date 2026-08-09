@@ -4,6 +4,7 @@ import dns from "dns";
 import pool from "../db/db";
 import { sendEmail, FRONTEND_URL } from "../config/mailer";
 import { loginUser, googleLoginUser, AuthError } from "../services/authService";
+import { loginThrottle } from "../services/loginThrottle";
 import { generateToken, hashValue } from "../utils/token";
 
 // ==============================
@@ -125,13 +126,21 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const result = await loginUser(email, password);
+    if (loginThrottle.isLocked(email)) {
+      const mins = Math.ceil(loginThrottle.remainingLockMs(email) / 60000);
+      return res.status(429).json({
+        message: `Too many failed attempts. Try again in ${mins} minute${mins === 1 ? "" : "s"}.`
+      });
+    }
 
+    const result = await loginUser(email, password);
+    loginThrottle.clearLoginFails(email);
     return res.json(result);
   } catch (error: any) {
     console.error("Login Error:", error);
 
     if (error instanceof AuthError) {
+      loginThrottle.recordLoginFail(req.body?.email);
       return res.status(error.statusCode).json({ message: error.message });
     }
 

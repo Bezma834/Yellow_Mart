@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { loginUser, googleLoginUser, AuthError } from "../services/authService";
+import { loginThrottle } from "../services/loginThrottle";
 import {
   signup,
   checkEmail,
@@ -39,9 +40,30 @@ const sessionUserId = (req: Request) =>
 export const actionLogin = async (req: Request, res: Response) => {
   try {
     const { email, password } = inputOf(req);
+
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required",
+        extensions: { code: "invalid-input" }
+      });
+    }
+
+    if (loginThrottle.isLocked(email)) {
+      const mins = Math.ceil(loginThrottle.remainingLockMs(email) / 60000);
+      return res.status(429).json({
+        message: `Too many failed attempts. Try again in ${mins} minute${mins === 1 ? "" : "s"}.`,
+        extensions: { code: "locked" }
+      });
+    }
+
     const result = await loginUser(email, password);
+    loginThrottle.clearLoginFails(email);
     return res.json(result);
   } catch (err) {
+    const { email } = inputOf(req);
+    if (email && err instanceof AuthError) {
+      loginThrottle.recordLoginFail(email);
+    }
     const { status, body } = actionError(err);
     return res.status(status).json(body);
   }

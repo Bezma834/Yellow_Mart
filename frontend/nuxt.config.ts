@@ -28,7 +28,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       backendUrl: "https://yellow-mart-backend.onrender.com/api",
-      googleClientId: ""
+      googleClientId: "",
+      googleMapsKey: ""
     }
   }
 

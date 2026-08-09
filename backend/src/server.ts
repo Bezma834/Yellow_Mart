@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth";
 import userRoutes from "./routes/user";
 import actionRoutes from "./routes/actions";
 import graphqlRoutes from "./routes/graphql";
+import adminRoutes from "./routes/admin";
 
 dotenv.config();
 
@@ -34,6 +35,12 @@ app.use(
 
       // Allow listed origins
       if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+
+      // Allow any localhost dev origin (any port)
+      if (origin.startsWith("http://localhost:")) {
         return callback(null, true);
       }
 
@@ -103,6 +110,13 @@ app.use(
 app.use(
   "/api",
   graphqlRoutes
+);
+
+
+// Admin dashboard API (JWT + role-gated server-side)
+app.use(
+  "/api/admin",
+  adminRoutes
 );
 
 

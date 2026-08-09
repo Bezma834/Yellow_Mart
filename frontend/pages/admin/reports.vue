@@ -1,385 +1,345 @@
 <script setup lang="ts">
-
 definePageMeta({
-
-layout:"admin"
-
+  layout: "admin",
+  middleware: "admin"
 })
 
+import { ref, onMounted } from "vue"
+import { useAdminApi } from "~/composables/useAdminApi"
 
-import { ref,onMounted } from "vue"
-import gql from "graphql-tag"
+const { getStats, loading } = useAdminApi()
 
-const { $apollo } = useNuxtApp() as any
+const stats = ref({
+  businesses: 0,
+  pending: 0,
+  approved: 0,
+  rejected: 0,
+  users: 0,
+  categories: 0,
+  featured: 0
+})
 
+const error = ref("")
 
-
-const users = ref(0)
-
-const businesses = ref(0)
-
-const categories = ref(0)
-
-const approvedBusinesses = ref(0)
-
-
-
-const GET_REPORTS = gql`
-
-query {
-
- users_aggregate {
-
-  aggregate {
-
-   count
-
+const loadReports = async () => {
+  error.value = ""
+  try {
+    stats.value = await getStats()
+  } catch (err: any) {
+    error.value = err.message || "Could not load reports"
+    console.error(err)
   }
-
- }
-
-
- businesses_aggregate {
-
-  aggregate {
-
-   count
-
-  }
-
- }
-
-
- categories_aggregate {
-
-  aggregate {
-
-   count
-
-  }
-
- }
-
-
- approved:businesses_aggregate(
- 
- where:{
-  status:{
-   _eq:"approved"
-  }
- }
-
- ){
-
-  aggregate{
-
-   count
-
-  }
-
- }
-
-
 }
 
-`
-
-
-
-const loadReports = async()=>{
-
-
-const {data}=await $apollo.query({
-
-query:GET_REPORTS
-
-})
-
-
-users.value =
-data.users_aggregate.aggregate.count
-
-
-businesses.value =
-data.businesses_aggregate.aggregate.count
-
-
-categories.value =
-data.categories_aggregate.aggregate.count
-
-
-approvedBusinesses.value =
-data.approved.aggregate.count
-
-
+const approvalRate = () => {
+  if (!stats.value.businesses) return 0
+  return Math.round((stats.value.approved / stats.value.businesses) * 100)
 }
 
+const rows = [
+  {
+    label: "Total businesses",
+    value: () => stats.value.businesses,
+    tone: "primary"
+  },
+  {
+    label: "Approved",
+    value: () => stats.value.approved,
+    tone: "approved"
+  },
+  {
+    label: "Pending review",
+    value: () => stats.value.pending,
+    tone: "pending"
+  },
+  {
+    label: "Rejected",
+    value: () => stats.value.rejected,
+    tone: "rejected"
+  },
+  {
+    label: "Featured listings",
+    value: () => stats.value.featured,
+    tone: "primary"
+  },
+  {
+    label: "Registered users",
+    value: () => stats.value.users,
+    tone: "primary"
+  },
+  {
+    label: "Categories",
+    value: () => stats.value.categories,
+    tone: "primary"
+  }
+]
 
-
-onMounted(()=>{
-
-loadReports()
-
-})
-
+onMounted(loadReports)
 </script>
 
-
-
 <template>
+  <div class="reports-page">
+    <div class="page-header">
+      <div>
+        <h1>Reports</h1>
+        <p>Marketplace performance at a glance</p>
+      </div>
+      <button class="refresh-btn" @click="loadReports" :disabled="loading">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Refresh
+      </button>
+    </div>
 
-<div class="reports">
+    <div v-if="error" class="error-banner">
+      {{ error }}
+      <button @click="loadReports">Retry</button>
+    </div>
 
+    <!-- SUMMARY HERO -->
+    <div class="summary-hero">
+      <div class="hero-main">
+        <span class="hero-label">Total Businesses</span>
+        <span class="hero-value">{{ loading ? "…" : stats.businesses }}</span>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-main">
+        <span class="hero-label">Approval Rate</span>
+        <span class="hero-value">{{ loading ? "…" : `${approvalRate()}%` }}</span>
+      </div>
+    </div>
 
-<h1>
-<svg class="title-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-Admin Reports
-</h1>
+    <!-- TABLE -->
+    <div v-if="loading" class="table-card">
+      <div v-for="i in 6" :key="i" class="row-skeleton">
+        <div class="sk-line w40"></div>
+        <div class="sk-line w20"></div>
+      </div>
+    </div>
 
-
-
-<div class="cards">
-
-
-<div class="card">
-
-<div class="stat-icon">
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-</div>
-
-<h2>
-Users
-</h2>
-
-<p>
-{{users}}
-</p>
-
-</div>
-
-
-
-
-<div class="card">
-
-<div class="stat-icon">
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg>
-</div>
-
-<h2>
-Businesses
-</h2>
-
-<p>
-{{businesses}}
-</p>
-
-</div>
-
-
-
-
-<div class="card">
-
-<div class="stat-icon">
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-</div>
-
-<h2>
-Categories
-</h2>
-
-<p>
-{{categories}}
-</p>
-
-</div>
-
-
-
-
-<div class="card">
-
-<div class="stat-icon approved-icon">
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-</div>
-
-<h2>
-Approved Businesses
-</h2>
-
-<p>
-{{approvedBusinesses}}
-</p>
-
-</div>
-
-
-
-</div>
-
-
-</div>
-
+    <div v-else class="table-card">
+      <div class="table">
+        <div class="table-row head">
+          <span>Metric</span>
+          <span>Count</span>
+        </div>
+        <div v-for="row in rows" :key="row.label" class="table-row">
+          <span class="metric-label">{{ row.label }}</span>
+          <span class="metric-value" :class="`tone-${row.tone}`">{{ row.value() }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
-
-
 <style scoped>
-
-
-.reports{
-
-padding:30px;
-
+.reports-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.reports h1{
-
-font-size:35px;
-
-font-weight:900;
-
-margin-bottom:35px;
-
-display:flex;
-
-align-items:center;
-
-gap:12px;
-
-color:var(--color-text-primary);
-
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.title-icon{
-
-color:var(--color-primary);
-
-flex-shrink:0;
-
-}
-
-.cards{
-
-display:grid;
-
-grid-template-columns:repeat(4,1fr);
-
-gap:20px;
-
-}
-
-.card{
-
-background:var(--color-surface);
-
-padding:28px 20px;
-
-border-radius:20px;
-
-box-shadow:0 10px 30px #0002;
-
-text-align:center;
-
-transition:.2s;
-
-}
-
-.card:hover{
-
-transform:translateY(-4px);
-
-box-shadow:var(--shadow-md);
-
-}
-
-.stat-icon{
-
-width:52px;
-
-height:52px;
-
-margin:0 auto 14px;
-
-border-radius:14px;
-
-background:var(--color-primary-light);
-
-color:var(--color-primary-hover);
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-}
-
-.approved-icon{
-
-background:rgba(34,197,94,.12);
-
-color:#16a34a;
-
-}
-
-.card h2{
-
-font-size:17px;
-
-font-weight:800;
-
-color:var(--color-text-primary);
-
-}
-
-.card p{
-
-font-size:40px;
-
-font-weight:900;
-
-color:var(--color-primary-hover);
-
-margin-top:8px;
-
-}
-
-@media(max-width:900px){
-
-.cards{
-
-grid-template-columns:repeat(2,1fr);
-
-}
-
-}
-
-@media(max-width:520px){
-
-.cards{
-
-grid-template-columns:1fr;
-
-}
-
-}
-
-</style>
-
-<style>
-:root.dark .reports {
-  background: var(--color-dark-bg);
-  min-height: 100vh;
-}
-:root.dark .card {
-  background: var(--color-dark-surface);
-}
-:root.dark .card h2 {
+.page-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0;
   color: var(--color-text-primary);
 }
-:root.dark .card p {
+
+.page-header p {
+  margin: 4px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid var(--color-border-light);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
   color: var(--color-primary);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.error-banner button {
+  margin-left: auto;
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.error-banner button:hover {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.summary-hero {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  padding: 30px 36px;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.2);
+}
+
+.hero-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hero-label {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.8;
+  color: var(--color-text-inverse);
+}
+
+.hero-value {
+  font-size: 38px;
+  font-weight: 900;
+  color: var(--color-text-inverse);
+  line-height: 1.1;
+}
+
+.hero-divider {
+  width: 1px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.table-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+}
+
+.table-row:not(.head) {
+  border-top: 1px solid var(--color-border-light);
+}
+
+.table-row.head {
+  background: var(--color-bg-tertiary);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+}
+
+.metric-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.tone-primary {
+  color: var(--color-primary-dark);
+}
+
+.tone-approved {
+  color: #16a34a;
+}
+
+.tone-pending {
+  color: #d97706;
+}
+
+.tone-rejected {
+  color: #ef4444;
+}
+
+.row-skeleton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--color-border-light);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.sk-line {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--color-bg-tertiary);
+}
+
+.w40 { width: 40%; }
+.w20 { width: 20%; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@media (max-width: 560px) {
+  .summary-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .hero-divider {
+    width: 100%;
+    height: 1px;
+  }
 }
 </style>

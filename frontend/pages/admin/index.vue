@@ -3,8 +3,11 @@ definePageMeta({
   layout: "admin",
   middleware: "admin"
 })
-import { ref, onMounted } from "vue"
-import { GET_ADMIN_STATS } from "~/graphql/queries"
+
+import { ref, onMounted, computed } from "vue"
+import { useAdminApi } from "~/composables/useAdminApi"
+
+const { getStats, loading } = useAdminApi()
 
 const stats = ref({
   businesses: 0,
@@ -12,395 +15,400 @@ const stats = ref({
   approved: 0,
   rejected: 0,
   users: 0,
-  categories: 0
+  categories: 0,
+  featured: 0
 })
 
-const loading = ref(true)
+const error = ref("")
 
-const { $apollo } = useNuxtApp() as any
 const loadStats = async () => {
+  error.value = ""
   try {
-    const { data } = await $apollo.query({
-      query: GET_ADMIN_STATS,
-      fetchPolicy: "network-only"
-    })
-
-    stats.value.businesses = data.businesses_aggregate.aggregate.count
-    stats.value.pending = data.pending_businesses.aggregate.count
-    stats.value.approved = data.approved_businesses.aggregate.count
-    stats.value.rejected = data.rejected_businesses.aggregate.count
-    stats.value.categories = data.categories_aggregate.aggregate.count
-    stats.value.users = data.users_aggregate.aggregate.count
-  } catch (error) {
-    console.error("ADMIN STATS ERROR:", error)
-  } finally {
-    loading.value = false
+    stats.value = await getStats()
+  } catch (err: any) {
+    error.value = err.message || "Could not load stats"
+    console.error("ADMIN STATS ERROR:", err)
   }
 }
-onMounted(() => {
-  loadStats()
-})
+
+onMounted(loadStats)
+
+const kpis = computed(() => [
+  {
+    label: "Total Businesses",
+    value: stats.value.businesses,
+    icon: "store",
+    tone: "primary"
+  },
+  {
+    label: "Pending Review",
+    value: stats.value.pending,
+    icon: "clock",
+    tone: "pending"
+  },
+  {
+    label: "Approved",
+    value: stats.value.approved,
+    icon: "check",
+    tone: "approved"
+  },
+  {
+    label: "Rejected",
+    value: stats.value.rejected,
+    icon: "x",
+    tone: "rejected"
+  },
+  {
+    label: "Registered Users",
+    value: stats.value.users,
+    icon: "users",
+    tone: "primary"
+  },
+  {
+    label: "Categories",
+    value: stats.value.categories,
+    icon: "folder",
+    tone: "primary"
+  }
+])
+
+const iconPaths: Record<string, string> = {
+  store: '<path d="M3 9l1.5-5h15L21 9"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  check: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  x: '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  folder: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>'
+}
 </script>
 
 <template>
-
-<section class="admin-page">
-
-  <div class="admin-container">
-
-    <!-- HEADER -->
-
-    <div class="admin-header">
-
+  <div class="dashboard">
+    <!-- PAGE HEADER -->
+    <div class="page-header">
       <div>
-
-        <h1>
-          <svg class="title-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-          Admin Dashboard
-        </h1>
-
-        <p>
-          Manage Yellow-Mart marketplace
-        </p>
-
+        <h1>Dashboard</h1>
+        <p>Overview of the Yellow-Mart marketplace</p>
       </div>
-
-      <div class="header-badge">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        Admin Panel
-      </div>
-
+      <button class="refresh-btn" @click="loadStats" :disabled="loading">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" :class="{ spinning: loading }">
+          <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Refresh
+      </button>
     </div>
 
-    <!-- STAT CARDS -->
+    <!-- ERROR BANNER -->
+    <div v-if="error" class="error-banner">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ error }}
+      <button @click="loadStats">Retry</button>
+    </div>
 
-    <div v-if="loading" class="stats-grid">
-      <div v-for="i in 6" :key="i" class="stat-card skeleton-card">
-        <div class="skeleton skeleton-icon"></div>
-        <div class="skeleton skeleton-line w-50"></div>
-        <div class="skeleton skeleton-line w-30"></div>
+    <!-- KPI CARDS -->
+    <div v-if="loading && !stats.businesses" class="kpi-grid">
+      <div v-for="i in 6" :key="i" class="kpi-card skeleton">
+        <div class="skeleton-icon"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
       </div>
     </div>
 
-    <div v-else class="stats-grid">
-
-      <div class="stat-card">
-        <div class="stat-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg>
+    <div v-else class="kpi-grid">
+      <div v-for="kpi in kpis" :key="kpi.label" class="kpi-card" :class="`tone-${kpi.tone}`">
+        <div class="kpi-icon" v-html="iconPaths[kpi.icon] ? `<svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'>${iconPaths[kpi.icon]}</svg>` : ''"></div>
+        <div class="kpi-meta">
+          <span class="kpi-value">{{ kpi.value }}</span>
+          <span class="kpi-label">{{ kpi.label }}</span>
         </div>
-        <h3>Businesses</h3>
-        <p>{{ stats.businesses }}</p>
       </div>
-
-      <div class="stat-card pending">
-        <div class="stat-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <h3>Pending</h3>
-        <p>{{ stats.pending }}</p>
-      </div>
-
-      <div class="stat-card approved">
-        <div class="stat-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </div>
-        <h3>Approved</h3>
-        <p>{{ stats.approved }}</p>
-      </div>
-
-      <div class="stat-card rejected">
-        <div class="stat-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-        </div>
-        <h3>Rejected</h3>
-        <p>{{ stats.rejected }}</p>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <h3>Users</h3>
-        <p>{{ stats.users }}</p>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <h3>Categories</h3>
-        <p>{{ stats.categories }}</p>
-      </div>
-
     </div>
 
     <!-- QUICK ACTIONS -->
-
-    <div class="actions">
-
-      <h2>
-        Quick Actions
-      </h2>
-
-      <div class="action-buttons">
-
-        <button @click="navigateTo('/admin/businesses')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg>
-          Manage Businesses
+    <div class="quick-section">
+      <h2>Quick Actions</h2>
+      <div class="action-grid">
+        <button class="action-card" @click="navigateTo('/admin/businesses')">
+          <span class="action-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg>
+          </span>
+          <span class="action-title">Review Businesses</span>
+          <span class="action-sub">{{ stats.pending }} awaiting approval</span>
         </button>
 
-        <button @click="navigateTo('/admin/categories')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          Manage Categories
+        <button class="action-card" @click="navigateTo('/admin/categories')">
+          <span class="action-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <span class="action-title">Manage Categories</span>
+          <span class="action-sub">{{ stats.categories }} categories</span>
         </button>
 
-        <button @click="navigateTo('/admin/users')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Manage Users
+        <button class="action-card" @click="navigateTo('/admin/users')">
+          <span class="action-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          <span class="action-title">Manage Users</span>
+          <span class="action-sub">{{ stats.users }} registered users</span>
         </button>
-
       </div>
-
     </div>
-
   </div>
-
-</section>
-
 </template>
 
 <style scoped>
-
-.admin-page {
-  min-height: 100vh;
-  background: var(--color-bg-secondary);
-  padding: 50px 20px;
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
-.admin-container {
-  max-width: 1200px;
-  margin: auto;
-}
-
-.admin-header {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
-  padding: 40px;
-  border-radius: 25px;
-  margin-bottom: 40px;
+.page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.25);
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.admin-header h1 {
-  font-size: 38px;
+.page-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.page-header p {
+  margin: 4px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid var(--color-border-light);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.error-banner button {
+  margin-left: auto;
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.error-banner button:hover {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+}
+
+.kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--color-primary);
+}
+
+.tone-pending .kpi-icon {
+  background: rgba(250, 204, 21, 0.15);
+  color: #d97706;
+}
+
+.tone-approved .kpi-icon {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+}
+
+.tone-rejected .kpi-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.kpi-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-value {
+  font-size: 30px;
   font-weight: 900;
   color: var(--color-text-primary);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
+  line-height: 1.1;
 }
 
-.title-icon {
-  color: var(--color-text-primary);
-  flex-shrink: 0;
-}
-
-.admin-header p {
+.kpi-label {
+  font-size: 13px;
+  font-weight: 600;
   color: var(--color-text-secondary);
+  margin-top: 3px;
+}
+
+.quick-section h2 {
   font-size: 18px;
-  margin: 6px 0 0;
-}
-
-.header-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(4px);
+  font-weight: 800;
   color: var(--color-text-primary);
-  padding: 10px 18px;
-  border-radius: var(--radius-full);
-  font-weight: 700;
-  font-size: 14px;
-  flex-shrink: 0;
+  margin: 0 0 14px;
 }
 
-.stats-grid {
+.action-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
 }
 
-.stat-card {
-  background: var(--color-surface);
-  padding: 30px;
-  border-radius: 25px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  transition: 0.3s;
-  border: 1px solid var(--color-border-light);
-}
-
-.stat-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-elevated);
-  border-color: var(--color-border-hover);
-}
-
-.stat-card h3 {
-  font-size: 18px;
+.action-card {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
-  color: var(--color-text-primary);
-  margin: 0;
+  padding: 22px;
+  text-align: left;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
 }
 
-.stat-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+.action-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.12);
+  transform: translateY(-3px);
+}
+
+.action-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
   background: rgba(245, 158, 11, 0.12);
   color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 15px;
+  margin-bottom: 4px;
 }
 
-.stat-card.pending .stat-icon {
-  background: rgba(250, 204, 21, 0.15);
-  color: #d97706;
-}
-
-.stat-card.approved .stat-icon {
-  background: rgba(34, 197, 94, 0.12);
-  color: #16a34a;
-}
-
-.stat-card.rejected .stat-icon {
-  background: rgba(239, 68, 68, 0.12);
-  color: #dc2626;
-}
-
-.stat-card p {
-  font-size: 40px;
-  font-weight: 900;
-  margin-top: 15px;
-  color: var(--color-text-primary);
-}
-
-.pending {
-  border-left: 6px solid #facc15;
-}
-
-.approved {
-  border-left: 6px solid #22c55e;
-}
-
-.rejected {
-  border-left: 6px solid #ef4444;
-}
-
-.actions {
-  margin-top: 50px;
-}
-
-.actions h2 {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  margin: 0;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-}
-
-.action-buttons button {
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
-  padding: 15px 25px;
-  border-radius: 15px;
-  border: none;
-  cursor: pointer;
-  font-weight: 700;
-  transition: 0.3s;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.action-title {
   font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
 
-.action-buttons button:hover {
-  background: var(--color-primary-hover);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Skeletons */
-.skeleton-card {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-height: 160px;
+.action-sub {
+  font-size: 13px;
+  color: var(--color-text-secondary);
 }
 
 .skeleton {
-  background: var(--color-bg-tertiary);
-  border-radius: var(--radius-lg);
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px;
   animation: pulse 1.4s ease-in-out infinite;
 }
 
 .skeleton-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: var(--color-bg-tertiary);
+  flex-shrink: 0;
 }
 
 .skeleton-line {
-  height: 14px;
+  height: 16px;
+  width: 70px;
+  border-radius: 6px;
+  background: var(--color-bg-tertiary);
 }
 
-.w-50 { width: 50%; }
-.w-30 { width: 30%; }
+.skeleton-line.short {
+  width: 110px;
+  height: 12px;
+  margin-top: 6px;
+}
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.45; }
 }
 
-@media (max-width: 700px) {
-  .admin-header h1 {
-    font-size: 28px;
+@media (max-width: 640px) {
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
   }
-  .admin-header {
-    padding: 28px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-</style>
-
-<style>
-:root.dark .admin-page {
-  background: var(--color-dark-bg);
-}
-:root.dark .stat-card {
-  background: var(--color-dark-surface);
-  border-color: var(--color-dark-border);
-}
-:root.dark .stat-card:hover {
-  border-color: var(--color-dark-border-hover);
-}
-:root.dark .skeleton {
-  background: var(--color-dark-bg-tertiary);
 }
 </style>
