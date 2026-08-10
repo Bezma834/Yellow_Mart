@@ -325,11 +325,11 @@ nav {
 }
 
 .admin-badge {
-  font-size: 13px;
+  font-size: 24px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-text-tertiary);
+  letter-spacing: 0.02em;
+  color: var(--color-text-primary);
 }
 
 .mobile-menu-btn {
