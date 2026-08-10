@@ -302,7 +302,9 @@ export const proxyGraphQL = async (req: Request, res: Response) => {
           const field = findRootField(op, fragments, "insert_businesses_one")!;
           const object = asRecord(argValue(field, "object", variables));
           if (!object) throw new Error("not permitted");
-          if (forbiddenKeys(object, FORBIDDEN_BUSINESS_SET_KEYS))
+          // "status" is allowed here ONLY as "pending" (checked below) —
+          // new businesses must go through admin approval. "featured" stays forbidden.
+          if (forbiddenKeys(object, ["featured"]))
             throw new Error("not permitted");
           const status = object.status;
           if (status !== undefined && status !== "pending")
