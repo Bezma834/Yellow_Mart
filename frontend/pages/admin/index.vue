@@ -181,9 +181,10 @@ const iconPaths: Record<string, string> = {
 
 .page-header p {
   margin: 6px 0 0;
-  color: var(--color-text-secondary);
-  font-size: 15px;
-  font-weight: 500;
+  color: var(--color-text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 0.8;
 }
 
 .refresh-btn {
@@ -322,10 +323,11 @@ const iconPaths: Record<string, string> = {
 }
 
 .kpi-label {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text-secondary);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text-primary);
   margin-top: 4px;
+  opacity: 0.85;
 }
 
 .quick-section h2 {
@@ -382,7 +384,7 @@ const iconPaths: Record<string, string> = {
 }
 
 .action-sub {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--color-text-secondary);
 }

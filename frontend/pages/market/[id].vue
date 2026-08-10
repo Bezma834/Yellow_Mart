@@ -102,6 +102,17 @@ const loadMap = async () => {
   const L = (await import("leaflet")).default
   await import("leaflet/dist/leaflet.css")
 
+  // Bulletproof pin: pure CSS divIcon — no external image dependency,
+  // so the marker always renders even when Leaflet's default icon
+  // asset URLs are unavailable in the production bundle.
+  const pinIcon = L.divIcon({
+    className: "ym-market-pin",
+    html: '<div class="ym-market-pin-dot"></div>',
+    iconSize: [24, 30],
+    iconAnchor: [12, 30],
+    popupAnchor: [0, -32]
+  })
+
   map = L.map("business-map").setView(
     [business.value.lat, business.value.lng],
     15
@@ -114,7 +125,15 @@ const loadMap = async () => {
     }
   ).addTo(map)
 
-  L.marker([business.value.lat, business.value.lng]).addTo(map)
+  const safeName = String(business.value.name || "Business")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+
+  L.marker([business.value.lat, business.value.lng], { icon: pinIcon })
+    .addTo(map)
+    .bindPopup(`<strong>${safeName}</strong>`)
 
   setTimeout(() => {
     map.invalidateSize()
@@ -220,6 +239,7 @@ onMounted(async () => {
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
               </svg>
               Call Business
+              <span v-if="business.phone" class="contact-btn-phone">{{ business.phone }}</span>
             </a>
             <a
               v-if="business.address"
@@ -479,6 +499,15 @@ onMounted(async () => {
   transition: all var(--transition-base);
 }
 
+.contact-btn .contact-btn-phone {
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-md);
+  padding: 0.2rem 0.55rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
 .contact-btn.primary {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
   color: var(--color-text-primary);
@@ -529,6 +558,32 @@ onMounted(async () => {
 
 <style>
 /* Dark mode - global */
+.ym-market-pin {
+  background: transparent;
+  border: none;
+}
+
+.ym-market-pin-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--color-primary);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  transform: rotate(-45deg);
+}
+
+.ym-market-pin-dot::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  left: 5px;
+  top: 5px;
+}
+
 :root.dark .page {
   background: var(--color-dark-bg);
 }

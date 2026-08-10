@@ -292,8 +292,10 @@ onMounted(loadBusinesses)
 
 .page-header p {
   margin: 4px 0 0;
-  color: var(--color-text-secondary);
-  font-size: 14px;
+  color: var(--color-text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0.75;
 }
 
 .refresh-btn {

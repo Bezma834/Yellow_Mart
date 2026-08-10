@@ -214,11 +214,11 @@ nav {
 }
 
 .nav-label {
-  font-size: 10.5px;
+  font-size: 12.5px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #475569;
+  letter-spacing: 0.1em;
+  color: #cbd5e1;
   padding: 14px 12px 6px;
 }
 
@@ -228,7 +228,7 @@ nav {
   gap: 11px;
   padding: 10px 12px;
   border-radius: 9px;
-  color: #94a3b8;
+  color: #e2e8f0;
   text-decoration: none;
   font-weight: 600;
   font-size: 14px;
@@ -264,7 +264,7 @@ nav {
   gap: 10px;
   padding: 10px 12px;
   border-radius: 9px;
-  color: #94a3b8;
+  color: #e2e8f0;
   text-decoration: none;
   font-weight: 600;
   font-size: 14px;
@@ -389,8 +389,9 @@ nav {
 }
 
 .topbar-meta span {
-  font-size: 12px;
-  color: var(--color-text-tertiary);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 .admin-content {
