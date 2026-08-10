@@ -172,16 +172,18 @@ const iconPaths: Record<string, string> = {
 }
 
 .page-header h1 {
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 30px;
+  font-weight: 900;
   margin: 0;
   color: var(--color-text-primary);
+  letter-spacing: -0.02em;
 }
 
 .page-header p {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 .refresh-btn {
@@ -256,7 +258,7 @@ const iconPaths: Record<string, string> = {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 22px;
+  padding: 24px;
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
   border-radius: 16px;
@@ -269,9 +271,9 @@ const iconPaths: Record<string, string> = {
 }
 
 .kpi-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 13px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -301,24 +303,37 @@ const iconPaths: Record<string, string> = {
 }
 
 .kpi-value {
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 900;
   color: var(--color-text-primary);
   line-height: 1.1;
 }
 
+.tone-pending .kpi-value {
+  color: #d97706;
+}
+
+.tone-approved .kpi-value {
+  color: #16a34a;
+}
+
+.tone-rejected .kpi-value {
+  color: #ef4444;
+}
+
 .kpi-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--color-text-secondary);
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .quick-section h2 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--color-text-primary);
-  margin: 0 0 14px;
+  margin: 0 0 16px;
+  letter-spacing: -0.01em;
 }
 
 .action-grid {
@@ -332,7 +347,7 @@ const iconPaths: Record<string, string> = {
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  padding: 22px;
+  padding: 24px;
   text-align: left;
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
@@ -349,25 +364,26 @@ const iconPaths: Record<string, string> = {
 }
 
 .action-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   background: rgba(245, 158, 11, 0.12);
   color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .action-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   color: var(--color-text-primary);
 }
 
 .action-sub {
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
