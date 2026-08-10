@@ -295,8 +295,8 @@ export const proxyGraphQL = async (req: Request, res: Response) => {
           const field = findRootField(op, fragments, "delete_businesses_by_pk")!;
           // delete_businesses_by_pk takes a plain `id` argument (unlike
           // update_businesses_by_pk which wraps it in pk_columns).
-          const pk = asRecord(argValue(field, "id", variables));
-          const owned = await isBusinessOwner(pk?.id ?? pk, auth!.id);
+          const deleteId = argValue(field, "id", variables);
+          const owned = await isBusinessOwner(deleteId, auth!.id);
           if (!owned) throw new Error("not permitted");
         }
 
