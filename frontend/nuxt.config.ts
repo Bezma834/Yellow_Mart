@@ -2,8 +2,7 @@ export default defineNuxtConfig({
 
   modules: [
     "@nuxt/ui",
-    "@nuxtjs/google-fonts",
-    "@nuxtjs/i18n"
+    "@nuxtjs/google-fonts"
   ],
 
   css: [
@@ -28,8 +27,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       backendUrl: "https://yellow-mart-backend.onrender.com/api",
-      googleClientId: "",
-      googleMapsKey: ""
+      googleClientId: ""
     }
   }
 

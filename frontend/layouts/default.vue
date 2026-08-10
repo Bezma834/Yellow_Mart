@@ -1,9 +1,9 @@
 <template>
   <div class="app-shell">
     <Navbar />
-    <PageTransition name="page" mode="out-in">
+    <Transition name="page" mode="out-in">
       <slot />
-    </PageTransition>
+    </Transition>
     <Footer />
     <AppToast />
 
