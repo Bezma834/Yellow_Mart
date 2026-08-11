@@ -22,8 +22,8 @@ import pool from "../db/db";
 //
 //  - ANONYMOUS  -> public read roots + pre-auth action mutations only
 //  - AUTHENTICATED -> user-facing roots + user data mutations only
-//  - admin table operations are REJECTED here (the admin dashboard uses
-//    the REST /api/admin API instead)
+//  - ADMIN (role in JWT) -> admin roots (users, category management,
+//    aggregates) and relaxed guards on shared roots
 //
 // The x-hasura-role header is deliberately NOT forwarded: Hasura has no
 // per-role permissions, so a "user" role header would break legitimate
@@ -61,6 +61,25 @@ const AUTH_MUTATION_ROOTS = new Set([
   "insert_favorites_one",
   "delete_favorites",
   "update_users_by_pk",
+]);
+
+// Admin panel roots: the dashboard, businesses, categories and users
+// management all run through the same proxy so they get Hasura's
+// relationship resolution. Gated by role === "admin" in the JWT.
+const ADMIN_QUERY_ROOTS = new Set([
+  ...AUTH_QUERY_ROOTS,
+  "users",
+  "users_aggregate",
+  "businesses_aggregate",
+  "categories_aggregate",
+]);
+
+const ADMIN_MUTATION_ROOTS = new Set([
+  ...AUTH_MUTATION_ROOTS,
+  "insert_categories_one",
+  "update_categories_by_pk",
+  "delete_categories_by_pk",
+  "delete_users_by_pk",
 ]);
 
 // Columns nobody may touch through the proxy (admin-only concerns):
@@ -251,13 +270,18 @@ export const proxyGraphQL = async (req: Request, res: Response) => {
   // ---- Per-operation allowlist ----------------------------------------
   for (const op of operations) {
     const isQuery = op.operation === "query";
+    const isAdmin = auth?.role === "admin";
     const allowed = isQuery
-      ? auth
-        ? AUTH_QUERY_ROOTS
-        : PUBLIC_QUERY_ROOTS
-      : auth
-        ? AUTH_MUTATION_ROOTS
-        : PUBLIC_MUTATION_ROOTS;
+      ? isAdmin
+        ? ADMIN_QUERY_ROOTS
+        : auth
+          ? AUTH_QUERY_ROOTS
+          : PUBLIC_QUERY_ROOTS
+      : isAdmin
+        ? ADMIN_MUTATION_ROOTS
+        : auth
+          ? AUTH_MUTATION_ROOTS
+          : PUBLIC_MUTATION_ROOTS;
 
     const roots = collectRoots(op, fragments);
     for (const root of roots) {
@@ -269,7 +293,7 @@ export const proxyGraphQL = async (req: Request, res: Response) => {
     }
 
     // ---- Mutation argument guards --------------------------------------
-    if (!isQuery && auth) {
+    if (!isQuery && auth && auth.role !== "admin") {
       const guard = async () => {
         if (roots.includes("update_users_by_pk")) {
           const field = findRootField(op, fragments, "update_users_by_pk")!;

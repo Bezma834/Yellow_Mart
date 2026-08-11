@@ -548,6 +548,19 @@ query GetAdminStats {
   }
 
 
+  featured_businesses: businesses_aggregate(
+    where:{
+      featured:{
+        _eq:true
+      }
+    }
+  ){
+    aggregate{
+      count
+    }
+  }
+
+
 }
 
 `
@@ -800,6 +813,34 @@ id:$id
 id
 
 }
+
+}
+
+`
+
+export const GET_ADMIN_USERS = gql`
+
+query GetAdminUsers($search: String) {
+
+  users(
+    where: {
+      _or: [
+        { email: { _ilike: $search } }
+        { username: { _ilike: $search } }
+        { fullname: { _ilike: $search } }
+      ]
+    }
+    order_by: { created_at: desc }
+  ) {
+    id
+    username
+    fullname
+    email
+    avatar
+    phone
+    role
+    created_at
+  }
 
 }
 
