@@ -20,6 +20,14 @@ export default defineNuxtConfig({
     enabled: true
   },
 
+  app: {
+    head: {
+      link: [
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }
+      ]
+    }
+  },
+
   pages: true,
 
   layouts: true,
