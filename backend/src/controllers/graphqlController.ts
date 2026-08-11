@@ -34,6 +34,11 @@ const PUBLIC_QUERY_ROOTS = new Set([
   "businesses",
   "businesses_by_pk",
   "categories",
+  // Aggregate counts power the public About page stats (counts only,
+  // no row data exposed).
+  "businesses_aggregate",
+  "categories_aggregate",
+  "users_aggregate",
 ]);
 
 const PUBLIC_MUTATION_ROOTS = new Set([
@@ -199,6 +204,31 @@ const forbiddenKeys = (
   return keys.some((k) => Object.prototype.hasOwnProperty.call(record, k));
 };
 
+// Public aggregate roots must only expose counts, never the underlying
+// rows. `nodes`, `edges` and `pageInfo` on *_aggregate return row data.
+const AGGREGATE_ROW_FIELDS = ["nodes", "edges", "pageInfo"];
+
+const aggregateExposesRows = (
+  field: FieldNode,
+  frags: Map<string, FragmentDefinitionNode>
+): boolean => {
+  if (!field.selectionSet) return false;
+  const check = (sel: SelectionSetNode): boolean => {
+    for (const s of sel.selections) {
+      if (s.kind === "Field") {
+        if (AGGREGATE_ROW_FIELDS.includes(s.name.value)) return true;
+      } else if (s.kind === "FragmentSpread") {
+        const frag = frags.get(s.name.value);
+        if (frag && check(frag.selectionSet)) return true;
+      } else if (s.kind === "InlineFragment") {
+        if (check(s.selectionSet)) return true;
+      }
+    }
+    return false;
+  };
+  return check(field.selectionSet);
+};
+
 // =====================================================================
 
 export const proxyGraphQL = async (req: Request, res: Response) => {
@@ -289,6 +319,20 @@ export const proxyGraphQL = async (req: Request, res: Response) => {
         return res.status(403).json({
           errors: [{ message: "Operation not permitted at API gateway" }],
         });
+      }
+    }
+
+    // Anonymous aggregate access is counts-only: block any attempt to
+    // pull row data (nodes/edges/pageInfo) off public *_aggregate roots.
+    if (!auth) {
+      for (const root of roots) {
+        if (!root.endsWith("_aggregate")) continue;
+        const field = findRootField(op, fragments, root);
+        if (field && aggregateExposesRows(field, fragments)) {
+          return res.status(403).json({
+            errors: [{ message: "Operation not permitted at API gateway" }],
+          });
+        }
       }
     }
 

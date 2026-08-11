@@ -845,6 +845,47 @@ query GetAdminUsers($search: String) {
 }
 
 `
+export const GET_ABOUT_STATS = gql`
+
+query GetAboutStats {
+
+  businesses_aggregate(
+    where: {
+      status: {
+        _eq: "approved"
+      }
+    }
+  ) {
+    aggregate {
+      count
+    }
+  }
+
+  categories_aggregate {
+    aggregate {
+      count
+    }
+  }
+
+  users_aggregate {
+    aggregate {
+      count
+    }
+  }
+
+  cities: businesses(
+    where: {
+      status: {
+        _eq: "approved"
+      }
+    }
+  ) {
+    city
+  }
+
+}
+
+`
 export const LOGIN_USER = gql`
 
 query LoginUser(

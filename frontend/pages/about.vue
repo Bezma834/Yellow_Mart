@@ -79,16 +79,6 @@ class="growth-fill"
 </p>
 
 
-<div class="growth">
-
-<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-  <polyline points="17 6 23 6 23 12"/>
-</svg>
-+{{stat.growth}}% growth
-
-</div>
-
 </div>
 
 
@@ -366,51 +356,105 @@ import {
   ref,
   onMounted
 } from "vue"
-
+import { GET_ABOUT_STATS } from "~/graphql/queries"
 
 
 const statsSection = ref<HTMLElement | null>(null)
-
 
 
 const stats = ref([
 
   {
     label:"Businesses Listed",
-    target:5000,
+    target:0,
     current:0,
-    progress:0,
-    growth:35
+    progress:0
   },
 
 
   {
     label:"Happy Customers",
-    target:25000,
+    target:0,
     current:0,
-    progress:0,
-    growth:42
+    progress:0
   },
 
 
   {
     label:"Cities Covered",
-    target:50,
+    target:0,
     current:0,
-    progress:0,
-    growth:28
+    progress:0
   },
 
 
   {
-    label:"Services Available",
-    target:300,
+    label:"Categories Available",
+    target:0,
     current:0,
-    progress:0,
-    growth:31
+    progress:0
   }
 
 ])
+
+
+const loadStats = async () => {
+
+  try {
+
+    const { $apollo } = useNuxtApp() as any
+
+    const { data } = await $apollo.query({
+      query: GET_ABOUT_STATS
+    })
+
+    const approvedCount =
+      data.businesses_aggregate?.aggregate?.count ?? 0
+
+    const distinctCities =
+      new Set(
+        (data.cities || [])
+          .map((b: any) => b?.city)
+          .filter((c: unknown): c is string =>
+            typeof c === "string" && c.trim() !== ""
+          )
+          .map((c: string) => c.trim().toLowerCase())
+      ).size
+
+    stats.value = [
+      {
+        label: "Businesses Listed",
+        target: approvedCount,
+        current: 0,
+        progress: 0
+      },
+      {
+        label: "Happy Customers",
+        target: data.users_aggregate?.aggregate?.count ?? 0,
+        current: 0,
+        progress: 0
+      },
+      {
+        label: "Cities Covered",
+        target: distinctCities,
+        current: 0,
+        progress: 0
+      },
+      {
+        label: "Categories Available",
+        target: data.categories_aggregate?.aggregate?.count ?? 0,
+        current: 0,
+        progress: 0
+      }
+    ]
+
+  } catch (err) {
+
+    console.error("About stats error:", err)
+
+  }
+
+}
 
 
 
@@ -517,7 +561,9 @@ const animateNumbers = () => {
 
 
 
-onMounted(()=>{
+onMounted(async () => {
+
+  await loadStats()
 
 
   if(!statsSection.value)
@@ -1279,26 +1325,6 @@ transition:width .2s ease;
 
 }
 
-
-
-.growth{
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-gap:6px;
-
-color:var(--color-secondary);
-
-font-weight:700;
-
-font-size:14px;
-
-}
-
 </style>
 
 <style>
@@ -1355,9 +1381,6 @@ font-size:14px;
 }
 :root.dark .growth-line {
   background: var(--color-dark-border);
-}
-:root.dark .growth {
-  color: var(--color-secondary);
 }
 :root.dark .tl-dot {
   border-color: var(--color-dark-bg);
