@@ -601,13 +601,15 @@ Logout
 
   color:#2563eb;
 
-  display:inline-flex;
+  display:flex;
 
   align-items:center;
 
+  justify-content:center;
+
   gap:6px;
 
-  margin-bottom:15px;
+  margin:0 0 15px;
 
 }
 
@@ -616,6 +618,8 @@ Logout
   display:inline-flex;
 
   align-items:center;
+
+  justify-content:center;
 
   gap:6px;
 
