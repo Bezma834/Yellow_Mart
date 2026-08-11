@@ -252,33 +252,72 @@ Helping customers and businesses grow.
 
 
 
-<!-- CATEGORIES -->
+<!-- VALUES -->
 
-<section class="categories">
+<section class="values">
 
-<h2>Explore Categories</h2>
+<h2>Our Values</h2>
 
-<p class="categories-sub">
-Browse businesses by what you're looking for.
+<p class="values-sub">
+What drives us every day as we build Yellow-Mart.
 </p>
 
-<div class="categories-grid">
+<div class="cards">
 
-<div
-class="category-card"
-v-for="category in categories"
-:key="category.id"
->
-<NuxtLink
-:to="`/category/${category.id}`"
-class="category-link"
->
+<div class="card">
 
-<span class="category-icon">{{ category.icon }}</span>
+<div class="card-icon">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/>
+  <path d="m9 12 2 2 4-4"/>
+</svg>
+</div>
 
-<span class="category-name">{{ category.name }}</span>
+<h3>Trust</h3>
 
-</NuxtLink>
+<p>
+We help people discover businesses they can rely on.
+</p>
+
+</div>
+
+
+
+<div class="card">
+
+<div class="card-icon">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+  <circle cx="9" cy="7" r="4"/>
+  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+</svg>
+</div>
+
+<h3>Community</h3>
+
+<p>
+Supporting local businesses and the neighborhoods they serve.
+</p>
+
+</div>
+
+
+
+<div class="card">
+
+<div class="card-icon">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M22 7 13.5 15.5 8.5 10.5 2 17"/>
+  <path d="M16 7h6v6"/>
+</svg>
+</div>
+
+<h3>Growth</h3>
+
+<p>
+Helping Ethiopian businesses grow and reach more customers.
+</p>
 
 </div>
 
@@ -315,7 +354,7 @@ Find businesses, services, and products across Ethiopia in seconds.
 <h3>Compare</h3>
 
 <p>
-Browse ratings, descriptions, and locations to pick what fits you best.
+Browse descriptions, locations, and contact details to pick what fits you best.
 </p>
 
 </div>
@@ -386,7 +425,7 @@ import {
   ref,
   onMounted
 } from "vue"
-import { GET_ABOUT_STATS, GET_CATEGORIES } from "~/graphql/queries"
+import { GET_ABOUT_STATS } from "~/graphql/queries"
 
 
 const statsSection = ref<HTMLElement | null>(null)
@@ -488,30 +527,6 @@ const loadStats = async () => {
 
 
 
-const categories = ref<any[]>([])
-
-const loadCategories = async () => {
-
-  try {
-
-    const { $apollo } = useNuxtApp() as any
-
-    const { data } = await $apollo.query({
-      query: GET_CATEGORIES
-    })
-
-    categories.value = data.categories || []
-
-  } catch (err) {
-
-    console.error("About categories error:", err)
-
-  }
-
-}
-
-
-
 const animateNumbers = () => {
 
 
@@ -583,10 +598,7 @@ const animateNumbers = () => {
 
 onMounted(async () => {
 
-  await Promise.all([
-    loadStats(),
-    loadCategories()
-  ])
+  await loadStats()
 
 
   if(!statsSection.value)
@@ -989,61 +1001,22 @@ var(--color-primary-glow);
 }
 
 
-/* CATEGORIES */
+/* VALUES */
 
-.categories {
+.values {
   padding: 70px 8%;
   text-align: center;
 }
 
-.categories h2 {
+.values h2 {
   font-size: 38px;
   font-weight: 800;
   margin-bottom: 10px;
 }
 
-.categories-sub {
+.values-sub {
   color: var(--color-text-secondary);
   margin-bottom: 40px;
-}
-
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.category-card {
-  background: var(--color-surface);
-  padding: 24px;
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border-light);
-  transition: all var(--transition-base);
-}
-
-.category-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.category-link {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
-  color: inherit;
-}
-
-.category-icon {
-  font-size: 32px;
-  margin-bottom: 10px;
-}
-
-.category-name {
-  font-weight: 600;
 }
 
 
@@ -1231,10 +1204,6 @@ font-size:35px;
   padding: 10px 5% 50px;
 }
 
-.categories-grid {
-  grid-template-columns: 1fr;
-}
-
 .hiw-grid {
   grid-template-columns: 1fr;
 }
@@ -1349,18 +1318,11 @@ transition:width .2s ease;
 :root.dark .growth-line {
   background: var(--color-dark-border);
 }
-:root.dark .categories h2 {
+:root.dark .values h2 {
   color: var(--color-text-primary);
 }
-:root.dark .categories-sub {
+:root.dark .values-sub {
   color: var(--color-text-secondary);
-}
-:root.dark .category-card {
-  background: var(--color-dark-surface);
-  border-color: var(--color-dark-border);
-}
-:root.dark .category-name {
-  color: var(--color-text-primary);
 }
 :root.dark .how-it-works {
   background: var(--color-dark-bg-secondary);
