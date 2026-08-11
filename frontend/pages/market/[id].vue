@@ -68,8 +68,6 @@ query GetBusiness($id: uuid!) {
     image
     lat
     lng
-    views
-    likes
   }
 }
 `
@@ -191,23 +189,6 @@ onMounted(async () => {
                 <circle cx="12" cy="10" r="3"/>
               </svg>
               <span>{{ business.address || "No address" }}, {{ business.city || "Ethiopia" }}</span>
-            </div>
-
-            <div class="stats-row" v-if="business.views || business.likes">
-              <div class="stat">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-                <span>{{ business.views || 0 }} views</span>
-              </div>
-              <div class="stat-divider"></div>
-              <div class="stat">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-                </svg>
-                <span>{{ business.likes || 0 }} likes</span>
-              </div>
             </div>
           </div>
 
@@ -436,34 +417,6 @@ onMounted(async () => {
   color: var(--color-primary);
 }
 
-.stats-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--color-border-light);
-}
-
-.stat {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.stat svg {
-  color: var(--color-primary);
-  opacity: 0.8;
-}
-
-.stat-divider {
-  width: 1px;
-  height: 16px;
-  background: var(--color-border);
-}
-
 .about-text {
   color: var(--color-text-secondary);
   line-height: 1.8;
@@ -549,10 +502,6 @@ onMounted(async () => {
   .card {
     padding: 1.25rem;
   }
-
-  .stats-row {
-    flex-wrap: wrap;
-  }
 }
 </style>
 
@@ -605,18 +554,6 @@ onMounted(async () => {
 :root.dark .favorite-btn.active {
   background: rgba(239, 68, 68, 0.15);
   color: #f87171;
-}
-
-:root.dark .stats-row {
-  border-top-color: var(--color-dark-border);
-}
-
-:root.dark .stat {
-  color: var(--color-text-secondary);
-}
-
-:root.dark .stat-divider {
-  background: var(--color-dark-border);
 }
 
 :root.dark .about-text {

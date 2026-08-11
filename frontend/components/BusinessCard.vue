@@ -19,14 +19,6 @@ const truncateText = (text: string, length: number) => {
   if (!text) return ""
   return text.length > length ? text.substring(0, length) + "..." : text
 }
-
-const formatCount = (count: number) => {
-  const n = Number(count) || 0
-  if (n >= 1000) {
-    return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "K"
-  }
-  return String(n)
-}
 </script>
 
 <template>
@@ -52,23 +44,6 @@ const formatCount = (count: number) => {
         <p class="description" v-if="business.description">
           {{ truncateText(business.description, 100) }}
         </p>
-
-        <div class="stats-row" v-if="business.views || business.likes">
-          <span class="stat">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-            {{ formatCount(business.views || 0) }}
-          </span>
-          <span class="stat-divider"></span>
-          <span class="stat">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-            {{ formatCount(business.likes || 0) }}
-          </span>
-        </div>
 
         <div class="card-footer" v-if="business.phone">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -184,35 +159,6 @@ const formatCount = (count: number) => {
   margin: 0;
   line-height: 1.5;
   flex-grow: 1;
-}
-
-.stats-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--color-text-secondary);
-  font-size: 0.75rem;
-  font-weight: 500;
-  margin-top: 0.25rem;
-}
-
-.stat {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.stat svg {
-  color: var(--color-primary);
-  opacity: 0.85;
-}
-
-.stat-divider {
-  width: 3px;
-  height: 3px;
-  border-radius: var(--radius-full);
-  background: var(--color-text-tertiary);
-  opacity: 0.5;
 }
 
 .card-footer {

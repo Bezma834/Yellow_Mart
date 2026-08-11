@@ -33,8 +33,6 @@ query GetFeaturedBusinesses {
     image
     lat
     lng
-    views
-    likes
 
   }
 
@@ -110,8 +108,6 @@ query GetAllBusinesses {
     image
     lat
     lng
-    views
-    likes
     featured
     status
 
@@ -199,8 +195,6 @@ _ilike:$search
     image
     lat
     lng
-    views
-    likes
 
   }
 
@@ -429,7 +423,6 @@ query GetBusinessesByCategory($category_id: uuid!) {
     lng
     featured
     views
-    likes
 
     category {
       id
