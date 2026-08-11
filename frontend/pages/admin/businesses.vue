@@ -435,7 +435,7 @@ const initials = (name: string) =>
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
   border-radius: 16px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .table-head,
@@ -454,11 +454,16 @@ const initials = (name: string) =>
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-text-secondary);
+  border-radius: 16px 16px 0 0;
 }
 
 .table-row {
   border-top: 1px solid var(--color-border-light);
   transition: background 0.15s;
+}
+
+.table-row:last-child {
+  border-radius: 0 0 16px 16px;
 }
 
 .table-row:hover {
