@@ -89,17 +89,17 @@
       <!-- Stats -->
       <div class="hero-stats">
         <div class="stat">
-          <span class="stat-number">10K+</span>
+          <span class="stat-number">{{ formatCount(stats.businesses) }}</span>
           <span class="stat-label">Businesses</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat">
-          <span class="stat-number">50+</span>
+          <span class="stat-number">{{ formatCount(stats.categories) }}</span>
           <span class="stat-label">Categories</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat">
-          <span class="stat-number">100K+</span>
+          <span class="stat-number">{{ formatCount(stats.users) }}</span>
           <span class="stat-label">Users</span>
         </div>
       </div>
@@ -110,10 +110,40 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { SEARCH_BUSINESSES } from "~/graphql/queries"
+import { SEARCH_BUSINESSES, GET_ABOUT_STATS } from "~/graphql/queries"
 
 const router = useRouter()
 const { $apollo } = useNuxtApp() as any
+
+const stats = ref({
+  businesses: 0,
+  categories: 0,
+  users: 0
+})
+
+const formatCount = (n: number) => {
+  if (n >= 1000) {
+    const k = (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1).replace(/\.0$/, "")
+    return `${k}K+`
+  }
+  return `${n}+`
+}
+
+const loadStats = async () => {
+  try {
+    const result = await $apollo.query({
+      query: GET_ABOUT_STATS,
+      fetchPolicy: "network-only"
+    })
+    stats.value = {
+      businesses: result.data.businesses_aggregate?.aggregate?.count ?? 0,
+      categories: result.data.categories_aggregate?.aggregate?.count ?? 0,
+      users: result.data.users_aggregate?.aggregate?.count ?? 0
+    }
+  } catch (err) {
+    console.error("Hero stats error:", err)
+  }
+}
 
 const searchQuery = ref("")
 const heroVideo = ref<HTMLVideoElement | null>(null)
@@ -160,6 +190,7 @@ const goToBusiness = (id: string) => {
 }
 
 onMounted(async () => {
+  loadStats()
   if (heroVideo.value) {
     heroVideo.value.playbackRate = 1.2
     try {
