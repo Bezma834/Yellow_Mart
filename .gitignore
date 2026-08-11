@@ -25,7 +25,11 @@ frontend/dist/
 
 # Logs
 
-*.log# Environment files
+*.log
+
+# Tool state
+
+.omo/# Environment files
 .env
 backend/.env
 frontend/.env
