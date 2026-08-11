@@ -78,6 +78,7 @@
       <GoogleLogin
         :callback="googleLogin"
         :button-config="googleButtonConfig"
+        :client-id="googleClientId"
       />
 
       <p class="signup">
@@ -110,6 +111,8 @@ const googleButtonConfig = {
   width: "350",
   logo_alignment: "center"
 }
+
+const googleClientId = useRuntimeConfig().public.googleClientId
 
 // Single source of truth for loading (drives the button disabled state)
 const loading = authLoading

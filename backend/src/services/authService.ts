@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { randomBytes } from "crypto";
 import { OAuth2Client } from "google-auth-library";
 import pool from "../db/db";
 import { signToken } from "../utils/token";
@@ -152,7 +153,26 @@ export const googleLoginUser = async (
   if (existing.rows.length > 0) {
     user = existing.rows[0];
   } else {
-    const username = email.split("@")[0];
+    let username = email.split("@")[0] || `user${Date.now()}`;
+
+    // Google accounts have no password: store an unguessable random hash so
+    // the password column stays NOT NULL-safe.
+    const googlePasswordHash = await bcrypt.hash(
+      randomBytes(24).toString("hex"),
+      10
+    );
+
+    // Email prefixes can collide with existing usernames (e.g. "john" taken
+    // by a different account) - append a short suffix to keep the unique
+    // constraint happy.
+    const usernameTaken = await pool.query(
+      `SELECT 1 FROM users WHERE username = $1`,
+      [username]
+    );
+
+    if (usernameTaken.rows.length > 0) {
+      username = `${username}${Date.now().toString(36).slice(-4)}`;
+    }
 
     const result = await pool.query(
       `
@@ -161,16 +181,18 @@ export const googleLoginUser = async (
         username,
         fullname,
         email,
+        password,
         avatar,
-        role
+        role,
+        email_verified
       )
 
       VALUES
-      ($1,$2,$3,$4,$5)
+      ($1,$2,$3,$4,$5,$6,$7)
 
       RETURNING *
       `,
-      [username, fullname, email, avatar, "user"]
+      [username, fullname, email, googlePasswordHash, avatar, "user", true]
     );
 
     user = result.rows[0];

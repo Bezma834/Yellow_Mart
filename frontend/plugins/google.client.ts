@@ -11,11 +11,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     return
   }
 
-  nuxtApp.vueApp.use(
-    Vue3GoogleLogin,
-    {
-      clientId: config.public.googleClientId
-    }
-  )
+  // Register the component only - each <GoogleLogin> passes its own client-id
+  // prop. Initializing GSI here would also run at app load and again per
+  // component mount ("google.accounts.id.initialize() is called multiple
+  // times"), which can open duplicate popups on click.
+  nuxtApp.vueApp.use(Vue3GoogleLogin)
 
 })

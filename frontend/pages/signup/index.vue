@@ -125,6 +125,7 @@
       <GoogleLogin
         :callback="googleLogin"
         :button-config="googleButtonConfig"
+        :client-id="googleClientId"
       />
 
       <p class="login-link">
@@ -170,6 +171,8 @@ const googleButtonConfig = {
   width: "350",
   logo_alignment: "center"
 }
+
+const googleClientId = useRuntimeConfig().public.googleClientId
 
 const emailCheckMsg = ref("")
 const emailCheckType = ref<"ok" | "bad">("ok")
