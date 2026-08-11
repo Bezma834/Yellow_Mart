@@ -58,8 +58,12 @@ const loadFavorites = async()=>{
 
 
     favorites.value =
-      result.data.favorites.map(
-        (item:any)=>item.business
+      Array.from(
+        new Map(
+          result.data.favorites.map(
+            (item:any)=>[item.business.id, item.business]
+          )
+        ).values()
       )
 
 

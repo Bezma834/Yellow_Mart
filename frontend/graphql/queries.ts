@@ -298,10 +298,31 @@ mutation AddFavorite(
       user_id: $user_id
       business_id: $business_id
     }
+    on_conflict: {
+      constraint: favorites_user_id_business_id_key
+      update_columns: []
+    }
   ) {
     id
     user_id
     business_id
+  }
+}
+`
+
+// ===============================
+// Check If Business Is Favorite
+// ===============================
+
+export const GET_USER_FAVORITE_BY_BUSINESS = gql`
+query GetUserFavoriteByBusiness($user_id: uuid!, $business_id: uuid!) {
+  favorites(
+    where: {
+      user_id: { _eq: $user_id }
+      business_id: { _eq: $business_id }
+    }
+  ) {
+    id
   }
 }
 `

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import {
   REMOVE_FAVORITE,
-  ADD_FAVORITE
+  ADD_FAVORITE,
+  GET_USER_FAVORITE_BY_BUSINESS
 } from "~/graphql/queries"
 import gql from "graphql-tag"
 import { useRoute, useRouter } from "vue-router"
@@ -90,6 +91,25 @@ const loadBusiness = async () => {
   }
 }
 
+const checkIsFavorite = async () => {
+  if (!user.value || !business.value) return
+
+  try {
+    const result = await $apollo.query({
+      query: GET_USER_FAVORITE_BY_BUSINESS,
+      variables: {
+        user_id: user.value.id,
+        business_id: business.value.id
+      },
+      fetchPolicy: "network-only"
+    })
+
+    isFavorite.value = result.data.favorites.length > 0
+  } catch (error) {
+    console.error("FAVORITE CHECK ERROR:", error)
+  }
+}
+
 let map: any
 
 const loadMap = async () => {
@@ -140,6 +160,7 @@ const loadMap = async () => {
 
 onMounted(async () => {
   await loadBusiness()
+  await checkIsFavorite()
   await loadMap()
 })
 </script>
