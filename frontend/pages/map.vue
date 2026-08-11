@@ -127,7 +127,8 @@ onMounted(async () => {
 .page-hero p {
   color: var(--color-text-tertiary);
   font-size: 18px;
-  margin: 0;
+  max-width: 620px;
+  margin: 0 auto;
 }
 
 .map-toolbar {

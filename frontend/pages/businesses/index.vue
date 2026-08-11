@@ -153,7 +153,8 @@ const filteredBusinesses = computed(() => {
 .page-hero p {
   color: var(--color-text-tertiary);
   font-size: 18px;
-  margin: 0 0 1.75rem;
+  max-width: 620px;
+  margin: 0 auto 1.75rem;
 }
 
 .search-wrap {
