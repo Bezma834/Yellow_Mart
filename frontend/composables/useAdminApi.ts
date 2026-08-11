@@ -37,7 +37,6 @@ interface AdminBusiness {
   views: number
   lat: number | null
   lng: number | null
-  created_at: string
   category_name: string | null
   owner_name: string | null
   owner_email: string | null
@@ -79,7 +78,6 @@ const GET_ADMIN_BUSINESSES = (status?: string) => gql`
       views
       lat
       lng
-      created_at
       category {
         name
       }
@@ -152,7 +150,6 @@ export const useAdminApi = () => {
           views: b.views,
           lat: b.lat,
           lng: b.lng,
-          created_at: b.created_at,
           category_name: b.category?.name ?? null,
           owner_name: b.owner?.fullname ?? null,
           owner_email: b.owner?.email ?? null
