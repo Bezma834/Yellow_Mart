@@ -12,11 +12,18 @@ const nearbyBusinesses = ref<any[]>([])
 const popularBusinesses = ref<any[]>([])
 const recentBusinesses = ref<any[]>([])
 const loading = ref(true)
+const nearbyLoading = ref(false)
+const nearbyError = ref("")
 const radius = ref(5)
 const showAll = ref(false)
 
 const toggleShowAll = () => {
   showAll.value = !showAll.value
+}
+
+const switchTab = (tab: string) => {
+  activeTab.value = tab
+  if (tab === "nearby") loadNearby()
 }
 
 const displayBusinesses = computed(() => {
@@ -59,7 +66,14 @@ const loadBusinesses = async () => {
 }
 
 const loadNearby = async () => {
-  if (!navigator.geolocation) return
+  nearbyError.value = ""
+
+  if (!navigator.geolocation) {
+    nearbyError.value = "Location is not supported by your browser"
+    return
+  }
+
+  nearbyLoading.value = true
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
@@ -67,7 +81,8 @@ const loadNearby = async () => {
       const lng = position.coords.longitude
 
       nearbyBusinesses.value =
-        featuredBusinesses.value
+        allBusinesses.value
+          .filter((b) => b.lat != null && b.lng != null)
           .map(business => ({
             ...business,
             distance: calculateDistance(
@@ -77,9 +92,20 @@ const loadNearby = async () => {
             )
           }))
           .filter(business => business.distance <= radius.value)
+          .sort((a, b) => a.distance - b.distance)
+
+      nearbyLoading.value = false
     },
     (error) => {
       console.log("LOCATION ERROR", error)
+
+      if (error.code === error.PERMISSION_DENIED) {
+        nearbyError.value = "Location access was denied. Please enable it in your browser settings to see nearby businesses."
+      } else {
+        nearbyError.value = "Could not get your location. Please try again."
+      }
+
+      nearbyLoading.value = false
     }
   )
 }
@@ -100,7 +126,6 @@ const tabs = [
 onMounted(async () => {
   try {
     await loadBusinesses()
-    await loadNearby()
     loadRecent()
   } catch (error) {
     console.log(error)
@@ -126,7 +151,7 @@ onMounted(async () => {
             v-for="tab in tabs"
             :key="tab.id"
             :class="['tab', { active: activeTab === tab.id }]"
-            @click="activeTab = tab.id"
+            @click="switchTab(tab.id)"
           >
             <svg v-if="tab.icon === 'star'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -162,6 +187,18 @@ onMounted(async () => {
           :key="business.id"
           :business="business"
         />
+      </div>
+
+      <div v-if="activeTab === 'nearby' && nearbyLoading" class="nearby-state">
+        Finding businesses near you...
+      </div>
+
+      <div v-else-if="activeTab === 'nearby' && nearbyError" class="nearby-state error">
+        {{ nearbyError }}
+      </div>
+
+      <div v-else-if="activeTab === 'nearby' && !nearbyLoading && nearbyBusinesses.length === 0" class="nearby-state">
+        No businesses found within {{ radius }}km of your location yet.
       </div>
     </div>
   </section>
@@ -259,6 +296,17 @@ onMounted(async () => {
   gap: 1.5rem;
 }
 
+.nearby-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.nearby-state.error {
+  color: #dc2626;
+}
+
 /* Responsive */
 @media (max-width: 1280px) {
   .business-grid {
@@ -340,5 +388,9 @@ onMounted(async () => {
   color: var(--color-dark-bg);
   box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
   font-weight: 700;
+}
+
+:root.dark .nearby-state {
+  color: #cbd5e1;
 }
 </style>
