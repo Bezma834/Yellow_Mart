@@ -3,11 +3,27 @@ import { OAuth2Client } from "google-auth-library";
 import pool from "../db/db";
 import { signToken } from "../utils/token";
 
-// Accept both OAuth clients (local dev + production frontend)
-const GOOGLE_CLIENT_IDS = [
+// Known Google OAuth clients (local dev + production frontend), plus any
+// extra client IDs supplied via env (GOOGLE_CLIENT_IDS, comma-separated).
+// The deployed frontend's client ID MUST be in this list or Google token
+// verification fails with "Wrong recipient, payload audience != requiredAudience".
+const HARDCODED_CLIENT_IDS = [
   "353855053860-khcclj6auvae5enurefp0b4g6nd1fcf2.apps.googleusercontent.com",
   "353855053860-8po57mngnlgrd7m0moniht4bor8jdo37.apps.googleusercontent.com"
-].filter(Boolean);
+];
+
+const envClientIds = (process.env.GOOGLE_CLIENT_IDS || "")
+  .split(",")
+  .map((id) => id.trim())
+  .filter(Boolean);
+
+const GOOGLE_CLIENT_IDS = [
+  ...new Set([
+    ...HARDCODED_CLIENT_IDS,
+    ...envClientIds,
+    ...(process.env.GOOGLE_CLIENT_ID ? [process.env.GOOGLE_CLIENT_ID] : [])
+  ])
+];
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || GOOGLE_CLIENT_IDS[0];
 
@@ -90,10 +106,22 @@ export const googleLoginUser = async (
     throw new AuthError("Google token missing");
   }
 
-  const ticket = await googleClient.verifyIdToken({
-    idToken: googleToken,
-    audience: GOOGLE_CLIENT_IDS
-  });
+  let ticket;
+  try {
+    ticket = await googleClient.verifyIdToken({
+      idToken: googleToken,
+      audience: GOOGLE_CLIENT_IDS
+    });
+  } catch (verifyError) {
+    console.error(
+      "GOOGLE ID TOKEN VERIFICATION FAILED:",
+      (verifyError as Error)?.message
+    );
+    throw new AuthError(
+      "Google sign-in could not be verified. Please try again.",
+      400
+    );
+  }
 
   const payload = ticket.getPayload();
 
