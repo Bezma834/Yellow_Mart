@@ -4,7 +4,7 @@ definePageMeta({
   middleware: "admin"
 })
 
-import { ref, onMounted, computed } from "vue"
+import { ref, onMounted, onUnmounted, computed } from "vue"
 import { useAdminApi } from "~/composables/useAdminApi"
 import { useToast } from "~/composables/useToast"
 
@@ -45,6 +45,33 @@ const confirmId = ref("")
 const confirmName = ref("")
 const processing = ref(false)
 
+// Row action dropdown (3-dot menu) state
+const menuOpenId = ref<string | null>(null)
+
+const toggleMenu = (id: string) => {
+  menuOpenId.value = menuOpenId.value === id ? null : id
+}
+
+const closeMenu = () => {
+  menuOpenId.value = null
+}
+
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (!target.closest(".row-menu")) {
+    menuOpenId.value = null
+  }
+}
+
+onMounted(() => {
+  loadBusinesses()
+  document.addEventListener("click", handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside)
+})
+
 const confirmCopy = {
   reject: {
     title: "Reject this business?",
@@ -66,6 +93,8 @@ const approve = async (id: string) => {
   } catch (err: any) {
     console.error(err)
     toast.error(err.message || "Failed to approve business")
+  } finally {
+    closeMenu()
   }
 }
 
@@ -74,6 +103,7 @@ const openConfirm = (action: "reject" | "delete", id: string, name: string) => {
   confirmId.value = id
   confirmName.value = name
   showConfirmModal.value = true
+  closeMenu()
 }
 
 const confirmActionHandler = async () => {
@@ -115,8 +145,6 @@ const initials = (name: string) =>
     .slice(0, 2)
     .join("")
     .toUpperCase()
-
-onMounted(loadBusinesses)
 </script>
 
 <template>
@@ -211,18 +239,37 @@ onMounted(loadBusinesses)
           </div>
 
           <div class="col-actions">
-            <button v-if="business.status !== 'approved'" class="act-btn approve" @click="approve(business.id)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Approve
-            </button>
-            <button v-if="business.status !== 'rejected'" class="act-btn reject" @click="openConfirm('reject', business.id, business.name)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              Reject
-            </button>
-            <button class="act-btn delete" @click="openConfirm('delete', business.id, business.name)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              Delete
-            </button>
+            <div class="row-menu">
+              <button
+                class="menu-btn"
+                :aria-label="`Actions for ${business.name}`"
+                :aria-expanded="menuOpenId === business.id"
+                @click.stop="toggleMenu(business.id)"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="5" r="2"/>
+                  <circle cx="12" cy="12" r="2"/>
+                  <circle cx="12" cy="19" r="2"/>
+                </svg>
+              </button>
+
+              <Transition name="menu-fade">
+                <div v-if="menuOpenId === business.id" class="menu-dropdown">
+                  <button v-if="business.status !== 'approved'" class="menu-item approve" @click="approve(business.id)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Approve
+                  </button>
+                  <button v-if="business.status !== 'rejected'" class="menu-item reject" @click="openConfirm('reject', business.id, business.name)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Reject
+                  </button>
+                  <button class="menu-item delete" @click="openConfirm('delete', business.id, business.name)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Delete
+                  </button>
+                </div>
+              </Transition>
+            </div>
           </div>
         </div>
       </div>
@@ -543,48 +590,103 @@ onMounted(loadBusinesses)
 
 .col-actions {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-.act-btn {
-  display: inline-flex;
+/* 3-dot row action menu */
+.row-menu {
+  position: relative;
+}
+
+.menu-btn {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 13px;
-  border: none;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-border-light);
   border-radius: 9px;
-  font-size: 13px;
-  font-weight: 700;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.menu-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 170px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  padding: 6px;
+  z-index: 50;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
   font-family: inherit;
+  text-align: left;
 }
 
-.act-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+.menu-item:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
 }
 
-.act-btn.approve {
-  background: #22c55e;
-  color: white;
+.menu-item.approve {
+  color: #16a34a;
 }
 
-.act-btn.reject {
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
+.menu-item.approve:hover {
+  background: rgba(34, 197, 94, 0.1);
 }
 
-.act-btn.delete {
-  background: rgba(239, 68, 68, 0.08);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.18);
+.menu-item.reject {
+  color: #d97706;
 }
 
-.act-btn.delete:hover {
-  background: rgba(239, 68, 68, 0.14);
+.menu-item.reject:hover {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.menu-item.delete {
   color: #ef4444;
+}
+
+.menu-item.delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.menu-fade-enter-active,
+.menu-fade-leave-active {
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.menu-fade-enter-from,
+.menu-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
 }
 
 .empty-state {
@@ -828,7 +930,7 @@ onMounted(loadBusinesses)
   }
 
   .col-actions {
-    flex-wrap: wrap;
+    justify-content: flex-start;
   }
 }
 </style>
