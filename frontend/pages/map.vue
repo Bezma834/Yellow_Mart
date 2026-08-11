@@ -109,29 +109,24 @@ onMounted(async () => {
 }
 
 .page-hero {
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse 60% 100% at 50% -20%, var(--color-primary-light) 0%, transparent 60%),
-    var(--color-surface);
-  border: 1px solid var(--color-border-light);
-  padding: 3rem 2rem;
-  border-radius: var(--radius-3xl);
   text-align: center;
-  margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-sm);
+  margin-bottom: 2.5rem;
+}
+
+.page-hero .eyebrow {
+  color: var(--color-primary-hover);
 }
 
 .page-hero h1 {
-  font-size: clamp(1.875rem, 4vw, 2.5rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0.75rem 0 0.625rem;
+  font-size: 42px;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  margin-bottom: 10px;
 }
 
 .page-hero p {
-  color: var(--color-text-secondary);
-  font-size: 1.0625rem;
+  color: var(--color-text-tertiary);
+  font-size: 18px;
   margin: 0;
 }
 
@@ -208,7 +203,11 @@ onMounted(async () => {
   }
 
   .page-hero {
-    padding: 2.25rem 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .page-hero h1 {
+    font-size: 32px;
   }
 
   .map-toolbar {
@@ -230,11 +229,8 @@ onMounted(async () => {
   background: var(--color-dark-bg);
 }
 
-:root.dark .page-hero {
-  background:
-    radial-gradient(ellipse 60% 100% at 50% -20%, rgba(245, 158, 11, 0.15) 0%, transparent 60%),
-    var(--color-dark-surface);
-  border-color: var(--color-dark-border);
+:root.dark .page-hero p {
+  color: var(--color-text-secondary);
 }
 
 :root.dark .map-count {
