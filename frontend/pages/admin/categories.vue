@@ -771,6 +771,10 @@ onMounted(loadCategories)
 }
 
 @media (max-width: 640px) {
+  .category-list {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
   .add-box {
     flex-direction: column;
     align-items: stretch;

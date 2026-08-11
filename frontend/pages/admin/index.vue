@@ -426,7 +426,27 @@ const iconPaths: Record<string, string> = {
 
 @media (max-width: 640px) {
   .kpi-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .kpi-card {
+    min-width: 0;
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .kpi-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+  }
+
+  .kpi-label {
+    font-size: 13px;
   }
 }
 </style>

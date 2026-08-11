@@ -841,7 +841,28 @@ color:var(--color-text-primary);
 
 .benefits{
 
-grid-template-columns:1fr 1fr;
+grid-template-columns:repeat(2,minmax(0,1fr));
+
+}
+
+@media(max-width:640px){
+
+
+.benefits{
+
+grid-template-columns:1fr;
+
+padding:40px 20px;
+
+}
+
+
+.benefit-card{
+
+padding:25px 20px;
+
+}
+
 
 }
 

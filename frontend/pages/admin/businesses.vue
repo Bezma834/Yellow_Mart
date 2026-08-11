@@ -937,5 +937,15 @@ const initials = (name: string) =>
   .col-actions {
     justify-content: flex-start;
   }
+
+  .tabs {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
 }
 </style>

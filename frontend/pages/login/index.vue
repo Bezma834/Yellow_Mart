@@ -225,6 +225,8 @@ const googleLogin = async (response: any) => {
 
   width: 420px;
 
+  max-width: 100%;
+
   padding: 2.75rem 2.5rem;
 
   background: var(--color-surface);
@@ -633,5 +635,24 @@ input::placeholder {
 :root.dark .error {
   background: rgba(239, 68, 68, 0.12);
   color: #f87171;
+}
+
+/* GoogleLogin is rendered without .google-btn wrapper - constrain its
+   iframe directly so it never overflows the auth card on mobile */
+.g-btn-wrapper {
+  width: 100% !important;
+}
+
+.g-btn-wrapper iframe {
+  width: 100% !important;
+  max-width: 350px;
+  height: 44px !important;
+}
+
+/* GSI renders the visible button as a div with inline width:350px
+   (the iframe is only the invisible auth handshake) - override it */
+.g-btn-wrapper .nsm7Bb-HzV7m-LgbsSe {
+  width: 100% !important;
+  max-width: 350px !important;
 }
 </style>
