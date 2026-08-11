@@ -252,27 +252,33 @@ Helping customers and businesses grow.
 
 
 
-<!-- TIMELINE -->
+<!-- CATEGORIES -->
 
-<section class="timeline">
+<section class="categories">
 
-<h2>Our Journey</h2>
+<h2>Explore Categories</h2>
 
-<div class="timeline-items">
+<p class="categories-sub">
+Browse businesses by what you're looking for.
+</p>
 
-<div class="tl-item" v-for="(item, i) in milestones" :key="i">
+<div class="categories-grid">
 
-<div class="tl-dot"></div>
+<div
+class="category-card"
+v-for="category in categories"
+:key="category.id"
+>
+<NuxtLink
+:to="`/category/${category.id}`"
+class="category-link"
+>
 
-<div class="tl-card">
+<span class="category-icon">{{ category.icon }}</span>
 
-<div class="tl-year">{{ item.year }}</div>
+<span class="category-name">{{ category.name }}</span>
 
-<h3>{{ item.title }}</h3>
-
-<p>{{ item.desc }}</p>
-
-</div>
+</NuxtLink>
 
 </div>
 
@@ -282,23 +288,47 @@ Helping customers and businesses grow.
 
 
 
-<!-- TEAM -->
+<!-- HOW IT WORKS -->
 
-<section class="team">
+<section class="how-it-works">
 
-<h2>Meet Our Team</h2>
+<h2>How It Works</h2>
 
-<div class="team-grid">
+<div class="hiw-grid">
 
-<div class="team-card" v-for="member in team" :key="member.name">
+<div class="hiw-card">
 
-<div class="avatar">{{ member.initials }}</div>
+<div class="hiw-number">1</div>
 
-<h3>{{ member.name }}</h3>
+<h3>Search</h3>
 
-<p class="role">{{ member.role }}</p>
+<p>
+Find businesses, services, and products across Ethiopia in seconds.
+</p>
 
-<p class="bio">{{ member.bio }}</p>
+</div>
+
+<div class="hiw-card">
+
+<div class="hiw-number">2</div>
+
+<h3>Compare</h3>
+
+<p>
+Browse ratings, descriptions, and locations to pick what fits you best.
+</p>
+
+</div>
+
+<div class="hiw-card">
+
+<div class="hiw-number">3</div>
+
+<h3>Connect</h3>
+
+<p>
+Contact the business directly and support your local economy.
+</p>
 
 </div>
 
@@ -356,7 +386,7 @@ import {
   ref,
   onMounted
 } from "vue"
-import { GET_ABOUT_STATS } from "~/graphql/queries"
+import { GET_ABOUT_STATS, GET_CATEGORIES } from "~/graphql/queries"
 
 
 const statsSection = ref<HTMLElement | null>(null)
@@ -458,37 +488,27 @@ const loadStats = async () => {
 
 
 
-const milestones = [
-  {
-    year: "2023",
-    title: "Platform Founded",
-    desc: "Yellow-Mart was founded with a mission to digitize Ethiopian local businesses."
-  },
-  {
-    year: "2024",
-    title: "Public Launch",
-    desc: "We launched our platform, onboarding hundreds of businesses across major Ethiopian cities."
-  },
-  {
-    year: "2025",
-    title: "1000+ Businesses",
-    desc: "Our community grew to over 1,000 active business listings with thousands of monthly visitors."
-  },
-  {
-    year: "2026",
-    title: "Expanding Reach",
-    desc: "Continuing to grow with enhanced features, better search, and nationwide coverage."
-  }
-]
+const categories = ref<any[]>([])
 
-const team = [
-  {
-    name: "Bezawit Tenaw",
-    role: "Founder & CEO",
-    initials: "BT",
-    bio: "Passionate about connecting Ethiopian businesses with the digital economy."
+const loadCategories = async () => {
+
+  try {
+
+    const { $apollo } = useNuxtApp() as any
+
+    const { data } = await $apollo.query({
+      query: GET_CATEGORIES
+    })
+
+    categories.value = data.categories || []
+
+  } catch (err) {
+
+    console.error("About categories error:", err)
+
   }
-]
+
+}
 
 
 
@@ -563,7 +583,10 @@ const animateNumbers = () => {
 
 onMounted(async () => {
 
-  await loadStats()
+  await Promise.all([
+    loadStats(),
+    loadCategories()
+  ])
 
 
   if(!statsSection.value)
@@ -966,122 +989,79 @@ var(--color-primary-glow);
 }
 
 
+/* CATEGORIES */
 
-
-/* TIMELINE */
-
-.timeline {
-  padding: 70px 8% 80px;
+.categories {
+  padding: 70px 8%;
   text-align: center;
 }
 
-.timeline h2 {
+.categories h2 {
   font-size: 38px;
   font-weight: 800;
-  margin-bottom: 50px;
+  margin-bottom: 10px;
 }
 
-.timeline-items {
-  position: relative;
-  max-width: 700px;
+.categories-sub {
+  color: var(--color-text-secondary);
+  margin-bottom: 40px;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  max-width: 900px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
 }
 
-.timeline-line {
-  display: none;
-}
-
-.tl-item {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  padding: 20px 0;
-}
-
-.tl-item:nth-child(odd) {
-  flex-direction: row;
-  padding-right: calc(50% + 30px);
-  text-align: right;
-}
-
-.tl-item:nth-child(even) {
-  flex-direction: row-reverse;
-  padding-left: calc(50% + 30px);
-  text-align: left;
-}
-
-.tl-dot {
-  position: absolute;
-  left: 50%;
-  top: 28px;
-  width: 18px;
-  height: 18px;
-  background: var(--color-primary);
-  border: 4px solid var(--color-bg-secondary);
-  border-radius: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-  box-shadow: 0 0 0 3px var(--color-primary-light);
-}
-
-.tl-card {
+.category-card {
   background: var(--color-surface);
-  padding: 22px 28px;
-  border-radius: 18px;
+  padding: 24px;
+  border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border-light);
-  width: 100%;
   transition: all var(--transition-base);
 }
 
-.tl-card:hover {
+.category-card:hover {
+  transform: translateY(-4px);
   box-shadow: var(--shadow-md);
-  transform: translateY(-3px);
 }
 
-.tl-year {
-  display: inline-block;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-primary-dark);
-  background: var(--color-primary-light);
-  padding: 3px 14px;
-  border-radius: var(--radius-full);
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
+.category-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
 }
 
-.tl-card h3 {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 6px;
+.category-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
 }
 
-.tl-card p {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--color-text-secondary);
+.category-name {
+  font-weight: 600;
 }
 
 
-/* TEAM */
+/* HOW IT WORKS */
 
-.team {
+.how-it-works {
   padding: 70px 8% 80px;
   text-align: center;
   background: var(--color-bg);
 }
 
-.team h2 {
+.how-it-works h2 {
   font-size: 38px;
   font-weight: 800;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
 
-.team-grid {
+.hiw-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 28px;
@@ -1089,52 +1069,45 @@ var(--color-primary-glow);
   margin: 0 auto;
 }
 
-.team-card {
+.hiw-card {
   background: var(--color-surface);
-  padding: 36px 28px;
+  padding: 35px 30px;
   border-radius: 24px;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border-light);
   transition: all var(--transition-base);
 }
 
-.team-card:hover {
-  box-shadow: var(--shadow-lg);
+.hiw-card:hover {
   transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
 }
 
-.avatar {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 18px;
+.hiw-number {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
   color: var(--color-text-primary);
   font-size: 24px;
   font-weight: 800;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-heading);
+  box-shadow: 0 8px 24px -6px var(--color-primary-glow);
 }
 
-.team-card h3 {
-  font-size: 18px;
+.hiw-card h3 {
+  font-size: 19px;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
-.team-card .role {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-primary);
-  margin-bottom: 10px;
-}
-
-.team-card .bio {
-  font-size: 14px;
-  color: var(--color-text-secondary);
+.hiw-card p {
+  font-size: 15px;
   line-height: 1.6;
+  color: var(--color-text-secondary);
 }
 
 
@@ -1258,20 +1231,14 @@ font-size:35px;
   padding: 10px 5% 50px;
 }
 
-.tl-item:nth-child(odd),
-.tl-item:nth-child(even) {
-  padding: 16px 0 16px 50px;
-  text-align: left;
-  flex-direction: row;
-}
-
-.tl-dot {
-  left: 20px;
-}
-
-.team-grid {
+.categories-grid {
   grid-template-columns: 1fr;
 }
+
+.hiw-grid {
+  grid-template-columns: 1fr;
+}
+
 
 }
 .growth-number{
@@ -1382,37 +1349,33 @@ transition:width .2s ease;
 :root.dark .growth-line {
   background: var(--color-dark-border);
 }
-:root.dark .tl-dot {
-  border-color: var(--color-dark-bg);
-}
-:root.dark .tl-card {
-  background: var(--color-dark-surface);
-  border-color: var(--color-dark-border);
-}
-:root.dark .tl-year {
-  background: rgba(245, 158, 11, 0.15);
-  color: var(--color-primary);
-}
-:root.dark .tl-card h3 {
+:root.dark .categories h2 {
   color: var(--color-text-primary);
 }
-:root.dark .tl-card p {
+:root.dark .categories-sub {
   color: var(--color-text-secondary);
 }
-:root.dark .team {
-  background: var(--color-dark-bg-secondary);
-}
-:root.dark .team h2 {
-  color: var(--color-text-primary);
-}
-:root.dark .team-card {
+:root.dark .category-card {
   background: var(--color-dark-surface);
   border-color: var(--color-dark-border);
 }
-:root.dark .team-card h3 {
+:root.dark .category-name {
   color: var(--color-text-primary);
 }
-:root.dark .team-card .bio {
+:root.dark .how-it-works {
+  background: var(--color-dark-bg-secondary);
+}
+:root.dark .how-it-works h2 {
+  color: var(--color-text-primary);
+}
+:root.dark .hiw-card {
+  background: var(--color-dark-surface);
+  border-color: var(--color-dark-border);
+}
+:root.dark .hiw-card h3 {
+  color: var(--color-text-primary);
+}
+:root.dark .hiw-card p {
   color: var(--color-text-secondary);
 }
 :root.dark .cta {
