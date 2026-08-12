@@ -1001,22 +1001,69 @@ var(--color-primary-glow);
 }
 
 
-/* VALUES */
+/* CATEGORIES */
 
-.values {
+.categories {
   padding: 70px 8%;
   text-align: center;
 }
 
-.values h2 {
+.categories h2 {
   font-size: 38px;
   font-weight: 800;
   margin-bottom: 10px;
 }
 
-.values-sub {
+.categories-sub {
   color: var(--color-text-secondary);
   margin-bottom: 40px;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.category-card {
+  background: var(--color-surface);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  transition: all var(--transition-base);
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary);
+}
+
+.category-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  text-decoration: none;
+  color: var(--color-text-primary);
+}
+
+.category-icon {
+  font-size: 26px;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary-lighter), var(--color-surface));
+  border-radius: 14px;
+}
+
+.category-name {
+  font-weight: 600;
+  font-size: 15px;
+  text-align: left;
 }
 
 
@@ -1208,6 +1255,10 @@ font-size:35px;
   grid-template-columns: 1fr;
 }
 
+.categories-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 
 }
 .growth-number{
@@ -1318,11 +1369,21 @@ transition:width .2s ease;
 :root.dark .growth-line {
   background: var(--color-dark-border);
 }
-:root.dark .values h2 {
+:root.dark .categories h2 {
   color: var(--color-text-primary);
 }
-:root.dark .values-sub {
+:root.dark .categories-sub {
   color: var(--color-text-secondary);
+}
+:root.dark .category-card {
+  background: var(--color-dark-surface);
+  border-color: var(--color-dark-border);
+}
+:root.dark .category-link {
+  color: var(--color-text-primary);
+}
+:root.dark .category-icon {
+  background: rgba(245, 158, 11, 0.12);
 }
 :root.dark .how-it-works {
   background: var(--color-dark-bg-secondary);
