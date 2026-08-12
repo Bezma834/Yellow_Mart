@@ -1,38 +1,22 @@
-node_modules/
-.env
-.nuxt/
-.output/
-dist/# Environment files
-
+# Environment files
 .env
 backend/.env
 frontend/.env
 
 # Node dependencies
-
 node_modules/
 backend/node_modules/
 frontend/node_modules/
 
 # Nuxt generated files
-
 frontend/.nuxt/
 frontend/.output/
 
 # Build files
-
 frontend/dist/
 
 # Logs
-
 *.log
 
 # Tool state
-
-.omo/# Environment files
-.env
-backend/.env
-frontend/.env
-
-# Dependencies
-node_modules/
+.omo/

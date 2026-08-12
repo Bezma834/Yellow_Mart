@@ -184,6 +184,18 @@
             Select Business Location
           </h3>
 
+          <div class="map-actions">
+            <button
+              type="button"
+              class="locate-btn"
+              :disabled="locating"
+              @click="useMyLocation"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+              {{ locating ? "Getting location..." : "Use My Location" }}
+            </button>
+          </div>
+
           <div id="add-business-map"></div>
 
           <div class="coordinates">
@@ -340,10 +352,44 @@ const cities = ref([
 
 const lat = ref(9.03)
 const lng = ref(38.74)
+const locating = ref(false)
 
 let L: any
 let map: any
 let marker: any
+
+const useMyLocation = () => {
+  if (!navigator.geolocation) {
+    generalError.value = "Location is not supported by your browser"
+    return
+  }
+
+  locating.value = true
+  generalError.value = ""
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      lat.value = position.coords.latitude
+      lng.value = position.coords.longitude
+
+      if (map && marker) {
+        map.setView([lat.value, lng.value], 15)
+        marker.setLatLng([lat.value, lng.value])
+      }
+
+      locating.value = false
+    },
+    (error) => {
+      locating.value = false
+
+      if (error.code === error.PERMISSION_DENIED) {
+        generalError.value = "Location access was denied. Enable it in your browser settings, or drag the marker on the map instead."
+      } else {
+        generalError.value = "Could not get your location. Drag the marker on the map instead."
+      }
+    }
+  )
+}
 
 // ---------------------
 // LOAD PAGE
@@ -900,6 +946,41 @@ setTimeout(() => {
   color:var(--color-primary-hover);
 }
 
+.map-actions{
+  margin-bottom:15px;
+}
+
+.locate-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 18px;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-full);
+  background:var(--color-surface);
+  color:var(--color-text-secondary);
+  font-size:14px;
+  font-weight:600;
+  font-family:inherit;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+
+.locate-btn svg{
+  color:var(--color-primary-hover);
+}
+
+.locate-btn:hover{
+  border-color:var(--color-primary);
+  color:var(--color-text-primary);
+  background:var(--color-primary-light);
+}
+
+.locate-btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
 #add-business-map{
   height:350px;
   border-radius:15px;
@@ -1137,6 +1218,9 @@ input[type="file"]{
 :root.dark .hover-select-search input { color: var(--color-text-primary); }
 :root.dark .hover-select-search input::placeholder { color: var(--color-text-tertiary); }
 :root.dark .coordinates { color: var(--color-text-tertiary); }
+:root.dark .locate-btn { background: var(--color-dark-surface); border-color: var(--color-dark-border); color: var(--color-text-secondary); }
+:root.dark .locate-btn svg { color: var(--color-primary); }
+:root.dark .locate-btn:hover { border-color: var(--color-primary); color: var(--color-text-primary); background: var(--color-primary-light); }
 :root.dark .submit-btn { background: var(--color-primary); color: var(--color-text-primary); }
 :root.dark .submit-btn:hover { background: var(--color-primary-hover); }
 :root.dark input[type="file"] { background: var(--color-dark-surface); color: var(--color-text-primary); }
